@@ -368,6 +368,40 @@ function dTapir(c, t) {
   ell(c, .72, -.35, .07, .1, '#1c1c22'); ell(c, .72, -.35, .035, .06, '#f2efe9');
   ell(c, .88, -.18, .04, .04, '#fff'); ell(c, .89, -.18, .025, .025, '#111');
 }
+function dCentipede(c, t) {
+  c.lineCap = 'round';
+  for (let i = 11; i >= 0; i--) {
+    const x = .9 - i * .17, y = Math.sin(t * 6 - i * .7) * .04, lp = Math.sin(t * 14 - i * 1.2) * .07;
+    c.strokeStyle = '#f2c230'; c.lineWidth = .035;
+    c.beginPath(); c.moveTo(x, y + .05); c.lineTo(x - .05 + lp, y + .26); c.moveTo(x, y + .05); c.lineTo(x + .05 - lp, y + .26); c.stroke();
+    ell(c, x, y, .12, .1, i % 2 ? '#8a2a1a' : '#a3321f'); ell(c, x, y - .03, .08, .03, 'rgba(255,200,150,.25)');
+  }
+  ell(c, 1.02, -.02, .13, .1, '#c2401f');
+  c.strokeStyle = '#c2401f'; c.lineWidth = .03;
+  c.beginPath(); c.moveTo(1.08, -.08); c.quadraticCurveTo(1.25, -.3, 1.35, -.25); c.moveTo(1.1, -.06); c.quadraticCurveTo(1.3, -.15, 1.4, -.08); c.stroke();
+  c.beginPath(); c.moveTo(-.98, 0); c.quadraticCurveTo(-1.2, -.1, -1.3, .05); c.moveTo(-.98, .02); c.quadraticCurveTo(-1.2, .1, -1.3, .18); c.stroke();
+  ell(c, 1.06, -.06, .025, .025, '#111');
+}
+function dTiger(c, t) {
+  const st = Math.sin(t * 6) * .1, O = '#e87a1f', K = '#1a1008', Wh = '#fbeee0';
+  c.lineCap = 'round';
+  c.strokeStyle = O; c.lineWidth = .11; c.beginPath(); c.moveTo(-.85, -.05); c.quadraticCurveTo(-1.3, 0, -1.4, -.35); c.stroke();
+  c.strokeStyle = K; c.lineWidth = .04; for (const [x, y] of [[-1.05, -.05], [-1.22, -.1], [-1.35, -.25]]) { c.beginPath(); c.moveTo(x - .05, y - .06); c.lineTo(x + .05, y + .06); c.stroke(); }
+  for (const [x, s] of [[-.58, 1], [-.36, -1], [.42, -1], [.62, 1]]) { c.fillStyle = s > 0 ? '#d86a14' : O; c.fillRect(x - .08, .1, .16, .45 + s * st); }
+  c.save(); c.beginPath(); c.ellipse(0, 0, .9, .36, 0, 0, TAU); c.fillStyle = O; c.fill(); c.clip();
+  ell(c, 0, .22, .7, .16, Wh);
+  c.strokeStyle = K; c.lineWidth = .06;
+  for (let x = -.75; x < .7; x += .16) { c.beginPath(); c.moveTo(x, -.38); c.quadraticCurveTo(x + .07, -.12, x - .02, .12); c.stroke(); }
+  c.restore();
+  ell(c, .88, -.2, .32, .28, O);
+  ell(c, .76, -.45, .08, .08, O); ell(c, 1.0, -.45, .08, .08, O); ell(c, .76, -.45, .04, .04, Wh); ell(c, 1.0, -.45, .04, .04, Wh);
+  ell(c, 1.0, -.08, .17, .12, Wh); ell(c, .78, -.1, .1, .08, Wh);
+  c.strokeStyle = K; c.lineWidth = .035;
+  for (const dx of [-.07, 0, .07]) { c.beginPath(); c.moveTo(.88 + dx, -.46); c.lineTo(.88 + dx * 1.3, -.34); c.stroke(); }
+  ell(c, .82, -.25, .045, .045, '#f2c230'); ell(c, .83, -.25, .02, .035, '#111');
+  ell(c, 1.0, -.26, .045, .045, '#f2c230'); ell(c, 1.01, -.26, .02, .035, '#111');
+  ell(c, 1.06, -.15, .04, .03, '#e8837a'); smile(c, 1.03, -.09, .05, '#3a1a0a');
+}
 function dJaguar(c, t) {
   const st = Math.sin(t * 7) * .1, O = '#e8a33a';
   c.strokeStyle = O; c.lineWidth = .1; c.lineCap = 'round'; c.beginPath(); c.moveTo(-.8, -.05); c.quadraticCurveTo(-1.3, 0, -1.35, -.35); c.stroke();
@@ -540,6 +574,8 @@ const SP = [
     fact: 'Its huge beak is surprisingly light because it is mostly hollow inside. It also helps the toucan stay cool.' },
   { id: 'chameleon', name: 'Chameleon', zone: [.55, .72], cost: 2000, inc: 22, size: 2.8, speed: 1.2, eats: 0, max: 8, draw: dChameleon, box: [-1.3, -.7, 1, .7],
     fact: 'Each eye can look a different way at the same time, and it can change color. Try tapping it!' },
+  { id: 'centipede', name: 'Giant Centipede', zone: [.86, .88], walk: 1, cost: 2500, inc: 28, size: 3.8, speed: 2.5, eats: 0, max: 8, draw: dCentipede, box: [-1.35, -.32, 1.42, .3],
+    fact: 'The Amazonian giant centipede can grow as long as a school ruler. Some hang from cave ceilings to catch bats!' },
   { id: 'macaw', name: 'Scarlet Macaw', zone: [.06, .35], cost: 3000, inc: 35, size: 3.4, speed: 8, eats: 1, max: 8, draw: dMacaw, box: [-1.75, -.55, 1.05, .6],
     fact: 'Flocks of macaws gather on riverbanks to lick clay. Scientists think the clay gives them salt they need.' },
   { id: 'sloth', name: 'Three-toed Sloth', zone: [.25, .42], cost: 6000, inc: 60, size: 3.6, speed: .6, eats: 0, max: 6, draw: dSloth, box: [-1.15, -.9, 1.15, .5],
@@ -552,6 +588,8 @@ const SP = [
     fact: 'Its short trunk is its nose and upper lip joined together. Baby tapirs are covered in stripes and spots like a watermelon.' },
   { id: 'jaguar', name: 'Jaguar', zone: [.86, .88], walk: 1, cost: 90000, inc: 650, size: 4.4, speed: 4, eats: 0, max: 4, draw: dJaguar, box: [-1.45, -.55, 1.2, .6],
     fact: 'The biggest cat in the Americas. Unlike most cats, it loves to swim.' },
+  { id: 'tiger', name: 'Sumatran Tiger', zone: [.86, .88], walk: 1, cost: 150000, inc: 1000, size: 4.6, speed: 3.5, eats: 0, max: 3, draw: dTiger, box: [-1.45, -.55, 1.25, .6],
+    fact: 'The smallest tiger in the world, found only in the rainforests of Sumatra in Indonesia. Its stripes are closer together than other tigers\', and very few are left in the wild.' },
   { id: 'harpy', name: 'Harpy Eagle', zone: [.04, .18], cost: 250000, inc: 1600, size: 4.2, speed: 7, eats: 0, max: 4, draw: dHarpy, box: [-1.4, -1.1, 1, .72],
     fact: 'One of the most powerful eagles in the world. Its claws can be as long as a bear\'s.' },
   { id: 'orangutan', name: 'Orangutan', zone: [.25, .48], cost: 500000, inc: 3000, size: 4, speed: 2, eats: 1, max: 4, draw: dOrangutan, box: [-.85, -1.45, .8, .8],
