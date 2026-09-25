@@ -3,8 +3,8 @@
    The cartoon style Job chose: real outlines made of curves, flat colours only, three tones per colour
    (mid; a dark shape on the shadow side; a small light shape where the light hits), light always from the
    top left, thin lines one tone darker for details, eyes = dark circle + one light dot.
-   No gradients and no see-through colours. Pages turn it on with ?art=cel for now. */
-const ART_CEL = typeof location !== 'undefined' && new URLSearchParams(location.search).get('art') === 'cel';
+   No gradients and no see-through colours. It is the default; ?art=old shows the old drawings for comparison. */
+const ART_CEL = !((typeof location !== 'undefined' && new URLSearchParams(location.search).get('art') === 'old') || (typeof ART_OLD !== 'undefined' && ART_OLD));
 
 /* ---- colour tones: from one mid colour get the dark, light and line tones ---- */
 function hexToHsl(hex) {

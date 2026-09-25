@@ -21,6 +21,7 @@
 // Review page: ?world=deep-sea or rainforest, &what=animals|decor, &only=new to skip the old column.
 const Q = new URLSearchParams(location.search), WORLD = Q.get('world') || 'deep-sea', WHAT = Q.get('what') || 'animals';
 document.getElementById('h').textContent = WORLD + ' · ' + WHAT + ' (old | new)';
+var ART_OLD = true;   // keep the old drawings in place so the page can show both side by side
 for (const src of ['../shared/helpers.js', '../shared/cel.js', `../${WORLD}/theme.js`, `../${WORLD}/cel.js`]) document.write(`<script src="${src}"><\/script>`);
 </script>
 <script>

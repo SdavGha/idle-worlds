@@ -1,7 +1,7 @@
 "use strict";
 /* ================= Rainforest: cel-shaded drawings =================
    New cartoon versions of every animal, decoration and piece of scenery (see shared/cel.js for the style).
-   Used when the page is opened with ?art=cel; the old drawings in theme.js stay the default for now.
+   These are the default; opening the page with ?art=old shows the old drawings in theme.js instead.
    Where an animal holds a branch, its hands or feet stay exactly where the old drawing had them. */
 
 /* ---- blue morpho (seen from above, wings beating) ---- */

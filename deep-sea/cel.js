@@ -1,7 +1,7 @@
 "use strict";
 /* ================= Deep sea: cel-shaded drawings =================
    New cartoon versions of every animal, decoration and piece of scenery (see shared/cel.js for the style).
-   Used when the page is opened with ?art=cel; the old drawings in theme.js stay the default for now. */
+   These are the default; opening the page with ?art=old shows the old drawings in theme.js instead. */
 /* ---- clownfish ---- */
 const CLOWN = {
   mid: { body: '#ff7a1a', band: '#ffffff', edge: '#1b1b1b', fin: '#ff8f33' },
