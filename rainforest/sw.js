@@ -1,7 +1,7 @@
 // Offline support for the installed app.
 // The game page itself is fetched fresh whenever there is internet (so updates show up on the next open),
 // and falls back to the saved copy when offline. Icons and the manifest come from the saved copy first.
-const CACHE = 'rainforest-v3';
+const CACHE = 'rainforest-v4';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'fonts/fredoka.woff2', 'fonts/nunito.woff2'];
 
 self.addEventListener('install', e => {
