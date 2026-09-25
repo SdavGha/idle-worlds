@@ -123,7 +123,7 @@ const maxCam = () => Math.max(0, WW - span * W);
 function syncPhase() { const m = maxCam(); if (m > 0) camPhase = Math.acos(1 - 2 * clamp(camX / m, 0, 1)); }
 function updCamera(dt) {
   const m = maxCam();
-  if (pass && !pass.tease) {
+  if (pass && !pass.tease && !pass.free) {
     camX += (clamp(pass.x - span * W / 2, 0, m) - camX) * Math.min(1, dt * .8); syncPhase();
   } else if (T >= autoPause) {
     camPhase += dt * TAU / 240;
@@ -131,7 +131,7 @@ function updCamera(dt) {
   }
   camX = clamp(camX, 0, m);
 }
-function panBy(dx) { camX = clamp(camX + dx, 0, maxCam()); autoPause = T + 20; syncPhase(); }
+function panBy(dx) { camX = clamp(camX + dx, 0, maxCam()); autoPause = T + 20; syncPhase(); if (pass) pass.free = true; }
 
 /* ================= creatures ================= */
 function newTarget(o) {
@@ -140,6 +140,14 @@ function newTarget(o) {
   o.tx = sp.cruise ? clamp(o.x + (Math.random() < .5 ? -1 : 1) * W * rand(.7, 1.3), WW * .03, WW * .97) : rand(WW * .03, WW * .97);
   o.ty = H * rand(sp.zone[0], sp.zone[1]);
 }
+// Each animal notices a nearby giant after its own random delay (0 to 2.5 s), then keeps fleeing while near.
+function noticedGiant(o, dt) {
+  const away = fleeDir(o);
+  if (!away) { o.react = null; return 0; }
+  if (o.react == null) o.react = rand(0, 2.5);
+  o.react -= dt;
+  return o.react <= 0 ? away : 0;
+}
 // A real giant visitor passing close by: which way (-1 / 1) should this animal get away, or 0 if it needn't.
 // Only animals less than half the giant's size are scared, so the kraken doesn't flee from the megalodon.
 function fleeDir(o) {
@@ -147,6 +155,37 @@ function fleeDir(o) {
   const dx = o.x - pass.x, dy = o.y - pass.y;
   if (Math.abs(dx) > pass.s * 2.4 || Math.abs(dy) > pass.s * 1.3) return 0;
   return dx === 0 ? pass.dir : Math.sign(dx);
+}
+/* A real giant visitor may gobble up a few animals that are right in front of its mouth: 0 to 3 per visit,
+   usually 1 or 2. It never takes a legendary animal or the last one of a kind, so the collection and the
+   shop unlocks are never lost, and giants marked pass.eats: false (plant eaters) never eat.
+   At most EAT_PER_HOUR animals are eaten in any hour, so a tank left on overnight isn't emptied. */
+const EAT_PER_HOUR = 4;
+function giantEats(dt) {
+  if (!pass || pass.tease || pass.sp.pass.eats === false) return;
+  const now = Date.now();
+  S.eatLog = (S.eatLog || []).filter(t => now - t < 3600e3);
+  if (S.eatLog.length >= EAT_PER_HOUR) return;
+  if (pass.meals == null) pass.meals = Math.random() < .25 ? 0 : 1 + Math.floor(Math.random() * 3);
+  if (pass.meals <= 0) return;
+  const b = pass.sp.box, mx = pass.x + pass.dir * b[2] * pass.s * .75, my = pass.y + Math.sin(pass.t * .6) * u * 1.5, r = pass.s * .7;
+  for (const o of creatures) {
+    if (o.leaving || o.gone || o.sp.legend || o.sp.max === 1 || (state.owned[o.sp.id] || 0) < 2 || o.sp.size >= pass.sp.size * .5) continue;
+    const ahead = (o.x - mx) * pass.dir;
+    if (!pass.lunge && ahead > 0 && ahead < r * 2.5 && Math.abs(o.y - my) < r && Math.random() < dt * .8) pass.lunge = .7;
+    if (Math.abs(o.x - mx) < r && Math.abs(o.y - my) < r * .8 && Math.random() < dt * 1.5) {
+      gobble(o);
+      if (--pass.meals <= 0 || S.eatLog.length >= EAT_PER_HOUR) break;
+    }
+  }
+}
+function gobble(o) {
+  o.gone = true;
+  state.owned[o.sp.id] = Math.max(1, (state.owned[o.sp.id] || 0) - 1);
+  S.eaten = (S.eaten || 0) + 1; S.eatLog.push(Date.now());
+  for (let i = 0; i < 16; i++) sparks.push({ x: o.x, y: o.y, vx: rand(-7, 7) * u, vy: rand(-9, 2) * u, life: rand(.6, 1.3) });
+  toast(`Gulp! ${pass.sp.name} gobbled up a ${o.sp.name.toLowerCase()}!`);
+  save(); updateHud();
 }
 function schoolLeader(sp) { for (const c of creatures) if (c.sp === sp && !c.leaving) return c; return null; }
 function spawn(sp, init) {
@@ -223,7 +262,7 @@ function updPerch(o, dt) {
   if (!P.fly) for (const p of pellets) if (Math.hypot(p.x - o.x, p.y - o.y) < s * .9) { eat(p, o); break; }
   // A giant is coming: fliers, swingers and jumpers move to a branch further away; slow climbers freeze and hide.
   o.fleeCD = (o.fleeCD || 0) - dt;
-  const away = fleeDir(o);
+  const away = noticedGiant(o, dt);
   if (away && o.fleeCD <= 0) {
     o.fleeCD = 6;
     if (P.move === 'climb') { if (!o.mv) { o.plan = []; o.wait = Math.max(o.wait, 5); } }
@@ -284,7 +323,7 @@ function updCreature(o, dt) {
     return;
   }
   // A giant is passing: swim, fly or run away from it, up or down away from its path, and fast.
-  const away = fleeDir(o);
+  const away = noticedGiant(o, dt);
   if (away) {
     o.scared = 3;
     o.tx = clamp(o.x + away * W * .6, WW * .02, WW * .98);
@@ -390,7 +429,8 @@ function schedulePass() {
 }
 function updPass(dt) {
   if (!pass) { passTimer -= dt; if (passTimer <= 0) schedulePass(); return; }
-  pass.t += dt; pass.x += pass.dir * pass.speed * dt;
+  pass.lunge = Math.max(0, (pass.lunge || 0) - dt);
+  pass.t += dt; pass.x += pass.dir * pass.speed * (pass.lunge > 0 ? 3 : 1) * dt;
   if ((pass.x - pass.x0) / (pass.x1 - pass.x0) >= 1) pass = null;
 }
 function passEdge() { const p = (pass.x - pass.x0) / (pass.x1 - pass.x0); return Math.max(0, Math.min(1, p * 8, (1 - p) * 8)); }
@@ -452,7 +492,7 @@ function frame(now) {
 
   for (const o of creatures) updCreature(o, dt);
   creatures = creatures.filter(o => !o.gone);
-  updPass(dt); updChest(dt); updCamera(dt);
+  updPass(dt); giantEats(dt); updChest(dt); updCamera(dt);
   for (const p of pellets) { p.y += u * 3 * dt; p.x += Math.sin(T * 2 + p.ph) * u * .3 * dt; }
   pellets = pellets.filter(THEME.pelletAlive);
   for (const s of sparks) { s.life -= dt; s.vy += u * 6 * dt; s.x += s.vx * dt; s.y += s.vy * dt; }

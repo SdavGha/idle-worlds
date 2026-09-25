@@ -390,8 +390,8 @@ const SP = [
   { id: 'orangutan', name: 'Orangutan', zone: [.2, .46], perch: { anchor: 1.22, move: 'swing', step: 'swing', reach: 30, walk: .3, rest: [4, 12], anim: .4 }, cost: 500000, inc: 3000, size: 4, speed: 2, eats: 1, max: 4, draw: dOrangutan, box: [-.85, -1.45, .8, .8],
     fact: 'Almost every night it builds a brand new leafy nest high in the trees to sleep in.' },
   { id: 'megatherium', name: 'Giant Ground Sloth', zone: [.8, .85], cost: 1500000, inc: 7000, size: 18, max: 1, draw: dMegatherium, box: [-1.55, -.7, 1.5, .82],
-    pass: { ground: 1, secs: 60, msg: 'A giant ground sloth is lumbering by!' }, origin: 'A real animal, now extinct',
-    fact: 'Megatherium was a real ground sloth as big as an elephant. It lived in South America until more than 10,000 years ago.' },
+    pass: { ground: 1, secs: 60, eats: false, msg: 'A giant ground sloth is lumbering by!' }, origin: 'A real animal, now extinct',
+    fact: 'Megatherium was a real ground sloth as big as an elephant. It lived in South America until more than 10,000 years ago, and it only ate plants.' },
 
   { id: 'kinnaree', legend: 1, name: 'Kinnaree', zone: [.2, .45], cost: 1e7, inc: 1e4, size: 4.5, speed: 4, eats: 1, max: 1, draw: dKinnaree, box: [-1.3, -1.1, .8, .75],
     origin: 'Thai legend · the Himmapan Forest',
