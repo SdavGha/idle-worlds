@@ -593,7 +593,7 @@ function drawWaterCel(viewX) {
 // Sunbeams: the same bands, one shade lighter, where the beams fall.
 function drawRaysCel(t) {
   // Job's call: the sunbeams are see-through, one flat pale colour laid over what is behind them
-  ctx.globalAlpha = .13; ctx.fillStyle = '#d8f2ff'; ctx.beginPath();
+  ctx.globalAlpha = .07; ctx.fillStyle = '#d8f2ff'; ctx.beginPath();
   for (const r of rays) {
     const sw = Math.sin(t * .2 + r.ph) * W * .03;
     ctx.moveTo(r.x + sw - r.w / 2, 0); ctx.lineTo(r.x + sw + r.w / 2, 0);
