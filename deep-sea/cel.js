@@ -590,18 +590,18 @@ function drawWaterCel(viewX) {
   const x0 = viewX - u * 6, x1 = viewX + VW / vs + u * 6;
   for (let i = 0; i < WATER.length; i++) fillPath(ctx, bandPath(i, x0, x1), WATER[i]);
 }
-// Sunbeams (Job's call): see-through, one flat pale colour laid over what is behind them. Each beam narrows
-// into a rounded tip instead of ending in a straight cut, so no hard corners show.
+// Sunbeams: the one place the flat-colour rule is broken, on Job's call. They are see-through and fade out
+// smoothly towards their far end, so they melt into the water instead of stopping at a hard edge.
 function drawRaysCel(t) {
-  ctx.globalAlpha = .045; ctx.fillStyle = '#d8f2ff'; ctx.beginPath();
+  const g = ctx.createLinearGradient(0, 0, 0, H * .55);
+  g.addColorStop(0, 'rgba(216,242,255,.11)'); g.addColorStop(1, 'rgba(216,242,255,0)');
+  ctx.fillStyle = g; ctx.beginPath();
   for (const r of rays) {
-    const sw = Math.sin(t * .2 + r.ph) * W * .03, bx = r.x + sw * 2 + r.w * .5, by = H * .62;
+    const sw = Math.sin(t * .2 + r.ph) * W * .03;
     ctx.moveTo(r.x + sw - r.w / 2, 0); ctx.lineTo(r.x + sw + r.w / 2, 0);
-    ctx.quadraticCurveTo(r.x + sw * 1.5 + r.w * 1.9, H * .4, bx, by);
-    ctx.quadraticCurveTo(r.x + sw * 1.5 - r.w * .9, H * .4, r.x + sw - r.w / 2, 0);
-    ctx.closePath();
+    ctx.lineTo(r.x + sw * 2 + r.w * 1.6, H * .55); ctx.lineTo(r.x + sw * 2 - r.w * .6, H * .55); ctx.closePath();
   }
-  ctx.fill(); ctx.globalAlpha = 1;
+  ctx.fill();
 }
 const SEA_FLOOR = tones('#1a2e42'), ROCK = tones('#16283b');
 function drawSeabedCel() {

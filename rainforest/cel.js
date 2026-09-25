@@ -522,16 +522,18 @@ function drawSkyCel(viewX) {
   const x0 = viewX - u * 6, x1 = viewX + VW / vs + u * 6;
   for (let i = 0; i < SKY.length; i++) fillPath(ctx, skyBand(i, x0, x1), SKY[i]);
 }
-// Sunbeams: see-through (Job's call), one flat pale colour laid over what is behind them; they fade out while it rains.
+// Sunbeams: the one place the flat-colour rule is broken, on Job's call. See-through, fading out smoothly
+// towards the forest floor; the whole beam dims while it rains.
 function drawRaysCelRF(t) {
-  const a = .16 * (1 - rainAmt(t) * .8);
-  ctx.globalAlpha = a; ctx.fillStyle = '#fff6cd'; ctx.beginPath();
+  const a = .18 * (1 - rainAmt(t) * .8), g = ctx.createLinearGradient(0, 0, 0, H * .85);
+  g.addColorStop(0, `rgba(255,246,205,${a})`); g.addColorStop(1, 'rgba(255,246,205,0)');
+  ctx.fillStyle = g; ctx.beginPath();
   for (const r of rays) {
     const sw = Math.sin(t * .15 + r.ph) * W * .02;
     ctx.moveTo(r.x + sw - r.w / 2, 0); ctx.lineTo(r.x + sw + r.w / 2, 0);
     ctx.lineTo(r.x + sw + r.w * 3, H * .85); ctx.lineTo(r.x + sw + r.w * 1.2, H * .85); ctx.closePath();
   }
-  ctx.fill(); ctx.globalAlpha = 1;
+  ctx.fill();
 }
 const EARTH = tones('#3d2e1d');
 function drawGroundCel() {
