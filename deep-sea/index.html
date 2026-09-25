@@ -117,6 +117,8 @@
     color:#10263a;pointer-events:none}
   .badge.rare{background:linear-gradient(135deg,#f4f8ff,#b9c8d8 45%,#ffffff 55%,#9fb2c6)}
   .badge.legendary{background:linear-gradient(90deg,#ff9ac8,#ffd67a,#9dffb8,#8fd8ff,#c9a0ff);background-size:200% 100%;animation:holo 3s linear infinite}
+  .tile .prog{display:block;font-family:var(--body);font-weight:700;font-size:12px;color:var(--aqua);margin-top:2px}
+  .tile.unk .prog{opacity:1}
   .detail .badge{position:static;display:inline-block;margin-bottom:6px;min-width:0;flex:none}
   @keyframes holo{to{background-position:200% 0}}
 
@@ -181,6 +183,7 @@
   <div class="tabs" id="bookTabs">
     <button data-tab="real" class="on">Real Animals</button>
     <button data-tab="legend">Legendary</button>
+    <button data-tab="ach">Stickers</button>
   </div>
   <div id="bookDetail" class="detail hidden"></div>
   <div id="bookGrid" class="grid"></div>
@@ -710,7 +713,11 @@ state.decor = state.decor || {};
 // Pearl vault cap: well above the most expensive item (20 billion) so nothing ever becomes unreachable,
 // but low enough that numbers stay exact and readable no matter how long the tank runs.
 const CAP = 1e11;
-function addPearls(n) { if (Number.isFinite(n) && n > 0) state.pearls = Math.min(CAP, state.pearls + n); }
+function addPearls(n) {
+  if (!Number.isFinite(n) || n <= 0) return;
+  state.pearls = Math.min(CAP, state.pearls + n);
+  if (state.stats && state.stats.earned < 1e15) state.stats.earned += n;
+}
 state.pearls = Number.isFinite(state.pearls) ? Math.max(0, Math.min(CAP, state.pearls)) : 0;
 for (const sp of SP) {
   const n = Math.floor(Number(state.owned[sp.id]) || 0);
@@ -878,7 +885,7 @@ function release(sp, o) {
   if (!o) return false;
   o.leaving = true; o.face = o.x < WW / 2 ? -1 : 1;
   state.owned[sp.id] = Math.max(0, (state.owned[sp.id] || 0) - 1);
-  toast(sp.name + ' swam home to the sea');
+  S.releases++; toast(sp.name + ' swam home to the sea');
   save(); updateHud(); return true;
 }
 function releaseById(id) { const o = creatures.find(c => c.id === id); return o ? release(o.sp, o) : false; }
@@ -886,7 +893,7 @@ function releaseById(id) { const o = creatures.find(c => c.id === id); return o 
 /* ================= giant visitors ================= */
 const PASSERS = SP.filter(s => s.pass);
 function teaseCandidate() { return PASSERS.find(s => !has(s) && unlocked(s)); }
-function startPass(sp, tease) {
+function startPass(sp, tease, summoned) {
   const s = sp.size * u, b = sp.box, dir = Math.random() < .5 ? 1 : -1;
   // A real visit crosses the whole tank and the camera follows it.
   // A mystery shadow only crosses what is on screen right now, so it isn't missed.
@@ -896,6 +903,7 @@ function startPass(sp, tease) {
   const secs = tease ? sp.pass.secs : sp.pass.secs * 2;
   pass = { sp, tease, dir, x: x0, x0, x1, y: H * sp.pass.y, s, t: 0, speed: Math.abs(x1 - x0) / secs };
   lastPass = sp.id;
+  if (tease) S.teases++; else if (!summoned) S.seen[sp.id] = (S.seen[sp.id] || 0) + 1;
   toast(tease ? 'Something very big... is swimming in the sea' : sp.pass.msg);
 }
 function schedulePass() {
@@ -954,7 +962,7 @@ function updChest(dt) {
     chest.open = Math.min(1, chest.open + dt);
     if (chest.open >= 1) {
       chest.phase = 2; chest.hold = 3;
-      const bonus = Math.max(10, income() * 30); addPearls(bonus);
+      const bonus = Math.max(10, income() * 30); addPearls(bonus); S.chests++;
       const x = WW * DECOR.find(d => d.id === 'chest').xs[0], y = seabedY(x) - u * 3;
       floatText(x, y - u * 4, '+' + fmt(bonus));
       for (let i = 0; i < 26; i++) sparks.push({ x: x + rand(-2, 2) * u, y, vx: rand(-4, 4) * u, vy: rand(-18, -8) * u, life: rand(1.5, 2.6) });
@@ -1203,7 +1211,7 @@ let last = performance.now(), T = 0, hudT = 0;
 function frame(now) {
   const rdt = Math.max(0, (now - last) / 1000); last = now;
   const dt = Math.min(rdt, .05); T += dt;
-  addPearls(income() * rdt);
+  addPearls(income() * rdt); sessionT += rdt;
 
   for (const o of creatures) updCreature(o, dt);
   creatures = creatures.filter(o => !o.gone);
@@ -1220,7 +1228,7 @@ function frame(now) {
   sendSnapshot();
 
   hudT -= rdt;
-  if (hudT <= 0) { hudT = .25; updateHud(); }
+  if (hudT <= 0) { hudT = .25; updateHud(); countDay(); checkAch(false); }
   requestAnimationFrame(frame);
 }
 
@@ -1374,7 +1382,7 @@ document.querySelectorAll('#shopTabs button').forEach(b => b.onclick = () => {
    legendary ones get a moving rainbow holo sheen, a glare band and glitter. The sheen follows the finger
    or mouse over the sticker, and drifts on its own otherwise. */
 const RARITY = ['', 'rare', 'legendary'];
-const tierOf = sp => sp.legend || sp.pass ? 2 : SP.indexOf(sp) >= SP.indexOf(BY.whaleshark) ? 1 : 0;
+const tierOf = sp => sp.tier != null ? sp.tier : sp.legend || sp.pass ? 2 : SP.indexOf(sp) >= SP.indexOf(BY.whaleshark) ? 1 : 0;
 const stickerCache = new Map();
 function tinted(src, color) {
   const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
@@ -1385,7 +1393,7 @@ function makeSticker(sp, w, h) {
   const key = sp.id + ':' + w;
   if (stickerCache.has(key)) return stickerCache.get(key);
   const art = document.createElement('canvas'); art.width = w; art.height = h;
-  drawFit(art, c => sp.draw(c, 1.3, { puff: 0, open: 0 }), sp.box, false, .8);
+  drawFit(art, c => sp.draw(c, 1.3, { puff: 0, open: 0 }), sp.box, false, sp.stickerFill || .8);
   const r = Math.max(3, h * .045), white = tinted(art, '#fff');
   const mask = document.createElement('canvas'); mask.width = w; mask.height = h;
   const m = mask.getContext('2d');
@@ -1465,11 +1473,103 @@ function badge(sp) {
   return b;
 }
 
+/* ----- achievement stickers -----
+   Deliberately slow: common ones take days of play, rare ones weeks, legendary ones a long-running tank.
+   Summoning a visitor from the book does not count as seeing it, so the counts can't be farmed. */
+const S = state.stats = Object.assign({ feeds: 0, tapped: [], puffs: 0, releases: 0, chests: 0, teases: 0, seen: {},
+  earned: state.pearls, days: 0, lastDay: '' }, state.stats || {});
+state.ach = state.ach || {};
+let sessionT = 0;
+const REAL = SP.filter(s => !s.legend && !s.pass), LEGENDS = SP.filter(s => s.legend);
+const own = id => state.owned[id] || 0;
+const achCols = [['#8ff5e8', '#0f7c86'], ['#d6bdff', '#5b2fc0'], ['#fff1a8', '#d98200']];
+function achArt(tier, icon) {
+  return (c, t) => {
+    const [hi, lo] = achCols[tier];
+    if (tier) { c.fillStyle = lo; c.beginPath(); for (let i = 0; i < 36; i++) { const a = i / 36 * TAU, r = i % 2 ? 1 : .9; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } c.fill(); }
+    const g = c.createRadialGradient(-.25, -.3, .05, 0, 0, .85); g.addColorStop(0, hi); g.addColorStop(1, lo);
+    c.fillStyle = g; c.beginPath(); c.arc(0, 0, .82, 0, TAU); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = .05; c.beginPath(); c.arc(0, 0, .7, 0, TAU); c.stroke();
+    c.save(); icon(c, t, lo); c.restore();
+  };
+}
+const ic = {
+  sp: (id, k = 1, dx = 0, dy = 0) => c => {
+    const sp = BY[id], b = sp.box, bw = b[2] - b[0], bh = b[3] - b[1], s = 1.05 * k / Math.max(bw, bh);
+    c.translate(dx - (b[0] + bw / 2) * s, dy - (b[1] + bh / 2) * s); c.scale(s, s); sp.draw(c, 1.3, { puff: 0, open: 0 });
+  },
+  pearl: (c, t, lo) => {
+    const g = c.createRadialGradient(-.12, -.14, .02, 0, 0, .4); g.addColorStop(0, '#fff'); g.addColorStop(.5, '#eaf4ff'); g.addColorStop(1, '#9fb8d6');
+    c.fillStyle = g; c.beginPath(); c.arc(0, 0, .38, 0, TAU); c.fill(); ell(c, -.13, -.15, .09, .06, 'rgba(255,255,255,.9)');
+  },
+  glass: c => {
+    c.strokeStyle = '#fff'; c.lineWidth = .1; c.lineCap = 'round';
+    c.beginPath(); c.arc(-.08, -.08, .28, 0, TAU); c.stroke(); c.beginPath(); c.moveTo(.13, .13); c.lineTo(.38, .38); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.arc(-.08, -.08, .23, 0, TAU); c.fill();
+  },
+  heart: c => { c.fillStyle = '#ff7aa8'; c.beginPath(); c.moveTo(0, .32); c.bezierCurveTo(-.55, -.02, -.3, -.5, 0, -.2); c.bezierCurveTo(.3, -.5, .55, -.02, 0, .32); c.fill(); },
+  moon: (c, t, lo) => { ell(c, 0, 0, .36, .36, '#fff3b0'); ell(c, .16, -.1, .3, .3, lo); for (const [x, y] of [[-.35, -.3], [.3, .3], [-.1, .38]]) star(c, x, y, .06); },
+  q: c => { c.fillStyle = '#fff'; c.font = '600 0.9px Fredoka, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('?', 0, .05); },
+  crown: c => {
+    c.fillStyle = '#fff6cf'; c.strokeStyle = '#9a5a00'; c.lineWidth = .04;
+    c.beginPath(); c.moveTo(-.4, .22); c.lineTo(-.44, -.2); c.lineTo(-.2, .02); c.lineTo(0, -.32); c.lineTo(.2, .02); c.lineTo(.44, -.2); c.lineTo(.4, .22); c.closePath(); c.fill(); c.stroke();
+    for (const [x, col] of [[-.2, '#ff5d7a'], [0, '#5dd6ff'], [.2, '#7dff9a']]) ell(c, x, .1, .05, .05, col);
+  },
+  star: c => { c.fillStyle = '#fff'; c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? .17 : .42; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } c.fill(); },
+  chest: c => { c.translate(0, .22); c.scale(.55, .55); ddChest(c, 0, { open: .6 }); },
+  castle: c => { c.translate(0, .42); c.scale(.3, .3); ddCastle(c, 1); },
+};
+function A(id, name, tier, icon, desc, goal) { return { id: 'a_' + id, name, tier, desc, goal, draw: achArt(tier, icon), box: [-1.02, -1.02, 1.02, 1.02], stickerFill: 1.08 }; }
+const ACH = [
+  A('snack', 'Snack Time', 0, (c, t) => { ic.sp('clown', .6, .08, -.1)(c); }, 'Feed the fish 500 times.', () => [S.feeds, 500]),
+  A('curious', 'Curious Explorer', 0, ic.glass, 'Tap 10 different kinds of animals to learn about them.', () => [S.tapped.length, 10]),
+  A('puff', 'Puff Puff', 0, ic.sp('puffer', .9), 'Make a pufferfish puff up 100 times.', () => [S.puffs, 100]),
+  A('school', 'Full School', 0, ic.sp('clown', .95), 'Have 12 clownfish in the tank at once.', () => [own('clown'), 12]),
+  A('shadow', 'Mystery Shadow', 0, ic.q, 'Spot 5 mystery shadows in the deep.', () => [S.teases, 5]),
+  A('kind', 'Kind Keeper', 0, ic.heart, 'Release 10 animals back to the sea.', () => [S.releases, 10]),
+  A('pearls', 'Pearl Collector', 0, ic.pearl, 'Collect 10 million pearls in total.', () => [S.earned, 1e7]),
+  A('chef', 'Master Chef', 1, ic.sp('whaleshark', .95), 'Feed the fish 5,000 times.', () => [S.feeds, 5000]),
+  A('biologist', 'Marine Biologist', 1, ic.sp('squid', 1), 'Learn about every real sea animal.', () => [REAL.filter(s => S.tapped.includes(s.id)).length, REAL.length]),
+  A('deep', 'Into the Deep', 1, ic.sp('angler', .95), 'Fill the midnight zone: every anglerfish, vampire squid, gulper eel and dumbo octopus.',
+    () => [['angler', 'vampire', 'gulper', 'dumbo'].reduce((a, id) => a + own(id), 0), ['angler', 'vampire', 'gulper', 'dumbo'].reduce((a, id) => a + BY[id].max, 0)]),
+  A('spotter', 'Bloop Spotter', 1, ic.sp('bloop', 1), 'See The Bloop swim by 25 times.', () => [S.seen.bloop || 0, 25]),
+  A('treasure', 'Treasure Hunter', 1, ic.chest, 'Watch the treasure chest open 100 times.', () => [S.chests, 100]),
+  A('designer', 'Interior Designer', 1, ic.castle, 'Own every decoration.', () => [DECOR.filter(d => state.decor[d.id]).length, DECOR.length]),
+  A('night', 'Night Watch', 1, ic.moon, 'Keep the tank open for 8 hours in one go.', () => [Math.floor(sessionT / 60), 480]),
+  A('tycoon', 'Pearl Tycoon', 1, ic.pearl, 'Collect 10 billion pearls in total.', () => [S.earned, 1e10]),
+  A('emperor', 'Pearl Emperor', 2, ic.crown, 'Collect 1 trillion pearls in total.', () => [S.earned, 1e12]),
+  A('legends', 'Legend Keeper', 2, ic.sp('naga', 1), 'Find every legendary creature.', () => [LEGENDS.filter(has).length, LEGENDS.length]),
+  A('complete', 'Complete Collection', 2, ic.star, 'Find all 20 animals and fill the tank with every real animal it can hold.',
+    () => [SP.filter(has).length + REAL.reduce((a, s) => a + own(s.id), 0), SP.length + REAL.reduce((a, s) => a + s.max, 0)]),
+  A('quake', 'Earthquake!', 2, ic.sp('anon', 1), 'Feel Pla Anon move 10 times.', () => [S.seen.anon || 0, 10]),
+  A('superfan', 'Bloop Superfan', 2, ic.sp('bloop', 1), 'See The Bloop swim by 100 times.', () => [S.seen.bloop || 0, 100]),
+  A('devoted', 'Devoted Keeper', 2, ic.sp('turtle', .95), 'Visit the tank on 30 different days.', () => [S.days, 30]),
+];
+const achDone = a => { const [cur, max] = a.goal(); return cur >= max; };
+function checkAch(silent) {
+  const fresh = [];
+  for (const a of ACH) if (!state.ach[a.id] && achDone(a)) { state.ach[a.id] = Date.now(); fresh.push(a); }
+  if (!fresh.length) return;
+  save();
+  if (silent) { setTimeout(() => toast(`You earned ${fresh.length} new sticker${fresh.length > 1 ? 's' : ''}! Look in the Collection.`), 6000); return; }
+  const a = fresh[fresh.length - 1];
+  showInfo('New sticker: ' + a.name, RARITY[a.tier] ? RARITY[a.tier] + ' sticker' : 'Sticker', a.desc);
+  const cx = camX + slot * W + W / 2, cy = H * .4;
+  for (let i = 0; i < 60; i++) sparks.push({ x: cx + rand(-3, 3) * u, y: cy, vx: rand(-14, 14) * u, vy: rand(-26, -6) * u, life: rand(1.6, 3) });
+  if (fresh.length > 1) toast(`You earned ${fresh.length} new stickers!`);
+}
+function countDay() {
+  const d = new Date(), day = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  if (S.lastDay !== day) { S.lastDay = day; S.days++; }
+}
+const achProgress = a => { const [cur, max] = a.goal(); return `${fmt(Math.min(cur, max))} / ${fmt(max)}`; };
+
 /* ----- collection book ----- */
 let bookTab = 'real', bookSel = null;
 function renderBook() {
   bookFx = [];
   if (!bookRAF) bookRAF = requestAnimationFrame(bookLoop);
+  if (bookTab === 'ach') { renderStickers(); return; }
   const all = SP.length, found = SP.filter(has).length;
   $('bookCount').textContent = `Found ${found} of ${all}`;
   const grid = $('bookGrid'); grid.innerHTML = '';
@@ -1495,7 +1595,7 @@ function renderBook() {
       const b = document.createElement('button'); b.textContent = 'Call it to swim by';
       b.onclick = () => {
         if (pass) { toast('Wait for the one swimming now to pass by'); return; }
-        startPass(bookSel, false); passTimer = rand(150, 240); $('book').classList.add('hidden'); wake();
+        startPass(bookSel, false, true); passTimer = rand(150, 240); $('book').classList.add('hidden'); wake();
       };
       box.append(b);
     }
@@ -1504,6 +1604,30 @@ function renderBook() {
       ? `<h3>???</h3><div class="zone">Not found yet</div><p>Collect ${fmt(price(bookSel))} pearls, then buy it in the Shop.</p>`
       : `<h3>???</h3><div class="zone">Not found yet</div><p>Buy the ${SP[SP.indexOf(bookSel) - 1].name} first to find out what this is.</p>`;
   }
+  det.append(box);
+}
+function renderStickers() {
+  const got = ACH.filter(a => state.ach[a.id]).length;
+  $('bookCount').textContent = `Stickers ${got} of ${ACH.length}`;
+  const grid = $('bookGrid'); grid.innerHTML = '';
+  for (const a of ACH) {
+    const done = !!state.ach[a.id];
+    const tile = document.createElement('div'); tile.className = 'tile' + (done ? '' : ' unk') + (bookSel === a ? ' sel' : '');
+    tile.append(done ? stickerEl(a, 240, 172, tile) : preview(a, 240, 172, true));
+    const bd = done && badge(a); if (bd) tile.append(bd);
+    const label = document.createElement('div'); label.textContent = a.name; tile.append(label);
+    if (!done) { const p = document.createElement('small'); p.className = 'prog'; p.textContent = achProgress(a); tile.append(p); }
+    tile.onclick = () => { bookSel = a; renderBook(); };
+    grid.append(tile);
+  }
+  const det = $('bookDetail');
+  if (!bookSel || !ACH.includes(bookSel)) { det.classList.add('hidden'); return; }
+  det.classList.remove('hidden'); det.innerHTML = '';
+  const a = bookSel, done = !!state.ach[a.id];
+  det.append(done ? stickerEl(a, 480, 300) : preview(a, 480, 300, true));
+  const box = document.createElement('div'), bd = badge(a);
+  const when = done ? 'Earned ' + new Date(state.ach[a.id]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Locked · ' + achProgress(a);
+  box.innerHTML = `${bd ? bd.outerHTML : ''}<h3>${a.name}</h3><div class="zone">${when}</div><p>${a.desc}</p>`;
   det.append(box);
 }
 document.querySelectorAll('#bookTabs button').forEach(b => b.onclick = () => {
@@ -1553,13 +1677,18 @@ function tapAt(wx, wy, fromView) {
   let card = null;
   for (let i = creatures.length - 1; i >= 0 && !card; i--) {
     const o = creatures[i];
-    if (!o.leaving && hitCreature(o, wx, wy)) { card = speciesCard(o.sp, o); if (o.sp.id === 'puffer') o.puffT = 2.5; }
+    if (!o.leaving && hitCreature(o, wx, wy)) {
+      card = speciesCard(o.sp, o);
+      if (!S.tapped.includes(o.sp.id)) S.tapped.push(o.sp.id);
+      if (o.sp.id === 'puffer') { o.puffT = 2.5; S.puffs++; }
+    }
   }
   if (!card) for (const p of decorSpots()) if (inBox(p.d, (wx - p.x) / p.s, (wy - p.y) / p.s)) { card = [p.d.name, 'Decoration', p.d.desc, 0]; break; }
   if (!card && hitPass(wx, wy)) card = pass.tease
     ? ['???', 'Mystery animal', `Something very big lives in the sea... Collect ${fmt(price(pass.sp))} pearls to meet it.`, 0]
     : speciesCard(pass.sp);
   if (card) { if (fromView) post({ type: 'card', card }); else showInfo(...card); return; }
+  if (wy < H * .6) S.feeds++;
   if (wy < H * .6) for (let i = 0; i < 4 && pellets.length < 60; i++) pellets.push({ x: wx + rand(-2, 2) * u, y: wy + rand(-1, 1) * u, ph: rand(0, 9) });
 }
 function viewToWorld(x, y) { return [camX + slot * W + x / vs, y / vs]; }
@@ -1660,6 +1789,7 @@ function startMain() {
     setTimeout(() => toast('While the tank was closed, your animals collected ' + fmt(got) + ' pearls'), 600);
   } else setTimeout(() => toast('Tap the water to feed the fish, drag to look around, and open the Shop to buy new animals'), 600);
   passTimer = PASSERS.some(has) ? 30 : 90;
+  countDay(); checkAch(true);
   prepareDual();
   wake();
   requestAnimationFrame(frame);
