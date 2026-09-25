@@ -590,14 +590,16 @@ function drawWaterCel(viewX) {
   const x0 = viewX - u * 6, x1 = viewX + VW / vs + u * 6;
   for (let i = 0; i < WATER.length; i++) fillPath(ctx, bandPath(i, x0, x1), WATER[i]);
 }
-// Sunbeams: the same bands, one shade lighter, where the beams fall.
+// Sunbeams (Job's call): see-through, one flat pale colour laid over what is behind them. Each beam narrows
+// into a rounded tip instead of ending in a straight cut, so no hard corners show.
 function drawRaysCel(t) {
-  // Job's call: the sunbeams are see-through, one flat pale colour laid over what is behind them
-  ctx.globalAlpha = .07; ctx.fillStyle = '#d8f2ff'; ctx.beginPath();
+  ctx.globalAlpha = .045; ctx.fillStyle = '#d8f2ff'; ctx.beginPath();
   for (const r of rays) {
-    const sw = Math.sin(t * .2 + r.ph) * W * .03;
+    const sw = Math.sin(t * .2 + r.ph) * W * .03, bx = r.x + sw * 2 + r.w * .5, by = H * .62;
     ctx.moveTo(r.x + sw - r.w / 2, 0); ctx.lineTo(r.x + sw + r.w / 2, 0);
-    ctx.lineTo(r.x + sw * 2 + r.w * 1.6, H * .55); ctx.lineTo(r.x + sw * 2 - r.w * .6, H * .55); ctx.closePath();
+    ctx.quadraticCurveTo(r.x + sw * 1.5 + r.w * 1.9, H * .4, bx, by);
+    ctx.quadraticCurveTo(r.x + sw * 1.5 - r.w * .9, H * .4, r.x + sw - r.w / 2, 0);
+    ctx.closePath();
   }
   ctx.fill(); ctx.globalAlpha = 1;
 }
