@@ -134,7 +134,21 @@ function updCamera(dt) {
 function panBy(dx) { camX = clamp(camX + dx, 0, maxCam()); autoPause = T + 20; syncPhase(); }
 
 /* ================= creatures ================= */
-function newTarget(o) { o.tx = rand(WW * .03, WW * .97); o.ty = H * rand(o.sp.zone[0], o.sp.zone[1]); }
+function newTarget(o) {
+  const sp = o.sp;
+  // Cruisers (whale shark) swim long, fairly level stretches instead of zig-zagging.
+  o.tx = sp.cruise ? clamp(o.x + (Math.random() < .5 ? -1 : 1) * W * rand(.7, 1.3), WW * .03, WW * .97) : rand(WW * .03, WW * .97);
+  o.ty = H * rand(sp.zone[0], sp.zone[1]);
+}
+// A real giant visitor passing close by: which way (-1 / 1) should this animal get away, or 0 if it needn't.
+// Only animals less than half the giant's size are scared, so the kraken doesn't flee from the megalodon.
+function fleeDir(o) {
+  if (!pass || pass.tease || o.leaving || o.sp.size >= pass.sp.size * .5) return 0;
+  const dx = o.x - pass.x, dy = o.y - pass.y;
+  if (Math.abs(dx) > pass.s * 2.4 || Math.abs(dy) > pass.s * 1.3) return 0;
+  return dx === 0 ? pass.dir : Math.sign(dx);
+}
+function schoolLeader(sp) { for (const c of creatures) if (c.sp === sp && !c.leaving) return c; return null; }
 function spawn(sp, init) {
   const nearCam = camX + rand(0, span * W);
   const o = { id: nextId++, sp, x: init ? rand(WW * .05, WW * .95) : nearCam, y: init ? H * rand(sp.zone[0], sp.zone[1]) : -u * 10,
@@ -207,6 +221,20 @@ function updPerch(o, dt) {
     if (pick) { o.plan = []; o.mv = { pel: pick, kind: 'fly', x0: o.x, y0: o.y, p: 0, dur: .4 + best / (sp.speed * u * 1.4) }; o.face = pick.x >= o.x ? 1 : -1; }
   }
   if (!P.fly) for (const p of pellets) if (Math.hypot(p.x - o.x, p.y - o.y) < s * .9) { eat(p, o); break; }
+  // A giant is coming: fliers, swingers and jumpers move to a branch further away; slow climbers freeze and hide.
+  o.fleeCD = (o.fleeCD || 0) - dt;
+  const away = fleeDir(o);
+  if (away && o.fleeCD <= 0) {
+    o.fleeCD = 6;
+    if (P.move === 'climb') { if (!o.mv) { o.plan = []; o.wait = Math.max(o.wait, 5); } }
+    else {
+      const reach = P.reach * u * 2.5, list = perchBranches(sp).filter(b => b !== o.b && Math.abs((b.x0 + b.x1) / 2 - o.x) < reach && Math.sign((b.x0 + b.x1) / 2 - o.x) === away);
+      if (list.length) {
+        const far = list.reduce((a, b) => Math.abs((b.x0 + b.x1) / 2 - pass.x) > Math.abs((a.x0 + a.x1) / 2 - pass.x) ? b : a);
+        o.mv = null; o.plan = []; o.wait = 0; queueMove(o, far, rand(.4, 1), P.move); o.plan[0].dur *= .6;
+      }
+    }
+  }
   if (!o.mv && o.plan && o.plan.length && o.wait <= 0) {
     const m = o.plan.shift();
     const [x1] = perchPos(o, m.b, m.f);
@@ -255,17 +283,47 @@ function updCreature(o, dt) {
     if (o.x < -u * 30 || o.x > WW + u * 30) o.gone = true;
     return;
   }
+  // A giant is passing: swim, fly or run away from it, up or down away from its path, and fast.
+  const away = fleeDir(o);
+  if (away) {
+    o.scared = 3;
+    o.tx = clamp(o.x + away * W * .6, WW * .02, WW * .98);
+    o.ty = clamp(o.y + (o.y < pass.y ? -1 : 1) * H * .2, H * .04, H * .88);
+  }
+  o.scared = Math.max(0, (o.scared || 0) - dt);
+  // Turtles swim up to the surface for a breath every so often.
+  if (sp.surface && !o.scared) {
+    o.breath = (o.breath ?? rand(10, 40)) - dt;
+    if (o.breath <= 0 && !o.breathing) { o.breathing = true; o.tx = clamp(o.x + rand(-1, 1) * W * .2, WW * .03, WW * .97); o.ty = H * .035; }
+    if (o.breathing && o.y < H * .06) { o.breathing = false; o.breath = rand(35, 70); newTarget(o); }
+  }
   let tx = o.tx, ty = o.ty, chase = null;
-  if (sp.eats && pellets.length) {
+  if (sp.eats && pellets.length && !o.scared) {
     let best = u * 45;
     for (const p of pellets) { const d = Math.hypot(p.x - o.x, p.y - o.y); if (d < best) { best = d; chase = p; } }
     if (chase) { tx = chase.x; ty = chase.y; }
   }
+  // School fish follow the first of their kind, each keeping its own spot in the group.
+  let catchUp = 1;
+  if (sp.school && !chase && !o.scared) {
+    const L = schoolLeader(sp);
+    if (L && L !== o) {
+      if (o.offX == null) { o.offX = rand(2, 11) * u; o.offY = rand(-5, 5) * u; }
+      tx = L.x - L.face * o.offX; ty = L.y + o.offY;
+      catchUp = clamp(Math.hypot(tx - o.x, ty - o.y) / (u * 6), .6, 2);
+    }
+  }
   if (sp.walk) ty = o.y;
   const dx = tx - o.x, dy = ty - o.y, d = Math.hypot(dx, dy) || 1;
-  let spd = sp.speed * u * (chase ? 1.8 : 1);
+  let spd = sp.speed * u * (chase ? 1.8 : 1) * (o.scared ? 2.4 : 1) * catchUp;
   if (sp.pulse) spd *= Math.max(.15, Math.sin(o.t * 3) + .3);
-  if (!chase && d < u * 3) newTarget(o);
+  // Lurkers (anglerfish) hang almost still with their light on, then dart a short way now and then.
+  if (sp.lurk && !o.scared) {
+    o.dash = (o.dash ?? rand(4, 12)) - dt;
+    spd *= o.dash < 0 ? 4 : .12;
+    if (o.dash < -.7) { o.dash = rand(8, 18); o.tx = clamp(o.x + rand(-1, 1) * u * 25, WW * .03, WW * .97); o.ty = H * rand(sp.zone[0], sp.zone[1]); }
+  }
+  if (!chase && !o.breathing && !o.scared && d < u * 3) newTarget(o);
   const e = Math.min(1, dt * 1.2);
   o.vx += (dx / d * spd - o.vx) * e; o.vy += (dy / d * spd * .6 - o.vy) * e;
   o.x += o.vx * dt; o.y += o.vy * dt + Math.sin(o.t * 1.3) * u * .05;

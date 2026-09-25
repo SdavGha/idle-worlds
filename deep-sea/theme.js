@@ -178,6 +178,30 @@ function dGulper(c, t) {
   c.fillStyle = '#16132a'; c.beginPath(); c.moveTo(.25, -.08); c.lineTo(1.05, -.45 - op); c.quadraticCurveTo(.88, 0, 1.05, .5 + op); c.lineTo(.25, .08); c.fill();
   ell(c, .12, -.17, .06, .06, '#dfe8ff');
 }
+function dSeaPig(c, t) {
+  const st = Math.sin(t * 4) * .05;
+  for (let i = 0; i < 5; i++) ell(c, -.55 + i * .26, .35 + (i % 2 ? st : -st), .08, .14, '#f3a7b8');
+  const g = c.createLinearGradient(0, -.4, 0, .4); g.addColorStop(0, '#ffc9d6'); g.addColorStop(1, '#f08aa4');
+  c.fillStyle = g; c.beginPath(); c.ellipse(0, 0, .85, .38, 0, 0, TAU); c.fill();
+  c.strokeStyle = '#ffb3c6'; c.lineWidth = .07; c.lineCap = 'round';
+  for (const [x, h] of [[.25, .45], [.42, .38]]) { c.beginPath(); c.moveTo(x, -.3); c.quadraticCurveTo(x + .05, -.3 - h * .6, x + .12 + Math.sin(t * 2 + x) * .05, -.3 - h); c.stroke(); }
+  c.lineWidth = .04;
+  for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(.8, .08 + i * .05); c.lineTo(.98, .16 + i * .07 + Math.sin(t * 3 + i) * .03); c.stroke(); }
+  blush(c, .55, .05, .08); smile(c, .68, -.02, .07, '#b0506a');
+}
+function dIsopod(c, t) {
+  const st = Math.sin(t * 8);
+  c.strokeStyle = '#c9b8c9'; c.lineWidth = .05; c.lineCap = 'round';
+  for (let i = 0; i < 7; i++) { const x = -.6 + i * .2, s = (i % 2 ? 1 : -1) * st * .05; c.beginPath(); c.moveTo(x, .2); c.lineTo(x - .05 + s, .42); c.stroke(); }
+  c.fillStyle = '#a996ae'; c.beginPath(); c.moveTo(-.78, -.1); c.lineTo(-1.02, -.2); c.lineTo(-1.02, .2); c.lineTo(-.78, .1); c.fill();
+  for (let i = 0; i < 8; i++) {
+    const x = -.7 + i * .19; ell(c, x, 0, .14, .3, i % 2 ? '#b7a6bd' : '#c8b8cc');
+    c.strokeStyle = 'rgba(90,70,100,.4)'; c.lineWidth = .02; c.beginPath(); c.moveTo(x + .13, -.28); c.quadraticCurveTo(x + .16, 0, x + .13, .28); c.stroke();
+  }
+  ell(c, .75, .02, .2, .22, '#d4c6d6'); ell(c, .8, -.06, .07, .06, '#2a2230'); ell(c, .82, -.08, .02, .02, '#fff');
+  c.strokeStyle = '#b7a6bd'; c.lineWidth = .03;
+  c.beginPath(); c.moveTo(.9, -.08); c.quadraticCurveTo(1.15, -.3, 1.3, -.2); c.moveTo(.9, 0); c.quadraticCurveTo(1.2, -.1, 1.35, .05); c.stroke();
+}
 function dDumbo(c, t) {
   const f = Math.sin(t * 4) * .45;
   for (let i = 0; i < 5; i++) ell(c, -.48 + i * .24, .68 + Math.sin(t * 3 + i) * .05, .15, .12, '#f08a7a');
@@ -331,29 +355,33 @@ function dAnon(c, t) {
 
 /* ================= species ================= */
 const SP = [
-  { id: 'clown', name: 'Clownfish', zone: [.08, .3], cost: 10, inc: .3, size: 2.6, speed: 9, eats: 1, max: 12, draw: dClown, box: [-1.4, -.9, 1, .6],
+  { id: 'clown', school: 1, name: 'Clownfish', zone: [.08, .3], cost: 10, inc: .3, size: 2.6, speed: 9, eats: 1, max: 12, draw: dClown, box: [-1.4, -.9, 1, .6],
     fact: 'Lives inside sea anemones. A special slimy coat protects it from their stinging tentacles.' },
-  { id: 'angel', name: 'Angelfish', zone: [.08, .3], cost: 60, inc: 1.2, size: 2.8, speed: 7, eats: 1, max: 10, draw: dAngel, box: [-1.3, -1.35, .9, 1.35],
+  { id: 'angel', school: 1, name: 'Angelfish', zone: [.08, .3], cost: 60, inc: 1.2, size: 2.8, speed: 7, eats: 1, max: 10, draw: dAngel, box: [-1.3, -1.35, .9, 1.35],
     fact: 'Its body is thin and flat like paper, so it can slip through narrow gaps in the coral.' },
   { id: 'puffer', onTap: o => { o.puffT = 2.5; }, name: 'Pufferfish', zone: [.1, .32], cost: 250, inc: 4, size: 2.4, speed: 4, eats: 1, max: 10, draw: dPuffer, box: [-1.3, -1, 1, 1],
     fact: 'When it gets scared, it gulps water until it puffs up like a ball. Try tapping it!' },
-  { id: 'turtle', name: 'Sea Turtle', zone: [.06, .3], cost: 900, inc: 12, size: 4.6, speed: 5, eats: 1, max: 8, draw: dTurtle, box: [-1, -.9, 1.4, .9],
+  { id: 'turtle', surface: 1, name: 'Sea Turtle', zone: [.06, .3], cost: 900, inc: 12, size: 4.6, speed: 5, eats: 1, max: 8, draw: dTurtle, box: [-1, -.9, 1.4, .9],
     fact: 'It has to come up to breathe, but while resting it can hold its breath for hours.' },
   { id: 'sword', name: 'Swordfish', zone: [.1, .42], cost: 2000, inc: 22, size: 4.4, speed: 10, eats: 1, max: 6, draw: dSword, box: [-1.5, -.85, 1.95, .5],
     fact: 'A super-fast swimmer with a special organ that keeps its eyes and brain warm, so it sees clearly in cold water.' },
   { id: 'jelly', pulse: 1, name: 'Jellyfish', zone: [.2, .55], cost: 3000, inc: 35, size: 3, speed: 2.5, eats: 0, max: 10, draw: dJelly, noflip: 1, box: [-.85, -.75, .85, 1.85],
     fact: 'No brain, no heart, and not a single bone.' },
-  { id: 'whaleshark', name: 'Whale Shark', zone: [.08, .28], cost: 6000, inc: 60, size: 9, speed: 2.5, eats: 1, max: 2, draw: dWhaleShark, box: [-1.6, -.9, 1.1, .6],
+  { id: 'whaleshark', cruise: 1, name: 'Whale Shark', zone: [.08, .28], cost: 6000, inc: 60, size: 9, speed: 2.5, eats: 1, max: 2, draw: dWhaleShark, box: [-1.6, -.9, 1.1, .6],
     fact: 'The biggest fish in the world, but very gentle. It only eats tiny plankton.' },
   { id: 'squid', name: 'Giant Squid', zone: [.42, .72], cost: 10000, inc: 100, size: 4.8, speed: 5, eats: 0, max: 6, draw: dSquid, box: [-3.3, -.45, 1.95, .45],
     fact: 'It has the biggest eyes of any animal, about the size of a dinner plate.' },
-  { id: 'angler', name: 'Anglerfish', zone: [.64, .86], cost: 30000, inc: 260, size: 3.6, speed: 3, eats: 0, max: 8, draw: dAngler, box: [-1.4, -1.35, 1.6, .8],
+  { id: 'angler', lurk: 1, name: 'Anglerfish', zone: [.64, .86], cost: 30000, inc: 260, size: 3.6, speed: 3, eats: 0, max: 8, draw: dAngler, box: [-1.4, -1.35, 1.6, .8],
     fact: 'A little glowing light hangs from its head to lure prey in the pitch-dark deep sea.' },
+  { id: 'seapig', name: 'Sea Pig', zone: [.86, .88], walk: 1, cost: 45000, inc: 330, size: 2.8, speed: 1, eats: 0, max: 8, draw: dSeaPig, box: [-.95, -.8, 1.05, .52],
+    fact: 'A pink sea cucumber that walks across the deep sea floor on little tube feet, eating tiny bits of food out of the mud.' },
   { id: 'vampire', name: 'Vampire Squid', zone: [.64, .86], cost: 60000, inc: 420, size: 3, speed: 2, eats: 0, max: 6, draw: dVampire, noflip: 1, box: [-1, -1.05, 1, .95],
     fact: 'Scary name, but it doesn\'t drink blood! It eats tiny bits of food that drift down like snow.' },
   { id: 'gulper', name: 'Gulper Eel', zone: [.62, .86], cost: 90000, inc: 650, size: 3.2, speed: 4, eats: 0, max: 8, draw: dGulper, box: [-3.3, -.75, 1.2, .75],
     fact: 'Its huge mouth opens wide like a bag, and the tip of its tail glows.' },
-  { id: 'dumbo', name: 'Dumbo Octopus', zone: [.68, .86], cost: 250000, inc: 1600, size: 3.2, speed: 3, eats: 0, max: 8, draw: dDumbo, noflip: 1, box: [-.95, -.85, .95, .85],
+  { id: 'isopod', name: 'Giant Isopod', zone: [.86, .88], walk: 1, cost: 150000, inc: 1000, size: 3.2, speed: 1.6, eats: 0, max: 6, draw: dIsopod, box: [-1.05, -.35, 1.38, .45],
+    fact: 'A deep-sea cousin of the little pill bug, but as long as a shoe! It can survive for years without eating.' },
+  { id: 'dumbo', name: 'Dumbo Octopus', zone: [.76, .86], cost: 250000, inc: 1600, size: 3.2, speed: 2, eats: 0, max: 8, draw: dDumbo, noflip: 1, box: [-.95, -.85, .95, .85],
     fact: 'Its two fins look like Dumbo the elephant\'s ears. It lives thousands of meters deep.' },
   { id: 'bloop', name: 'The Bloop', zone: [.74, .8], cost: 1000000, inc: 6000, size: 26, max: 1, draw: dBloop, box: [-2.3, -.9, 1.8, .9],
     pass: { y: .77, secs: 45, msg: 'The Bloop is swimming by!' }, origin: 'A mystery sound from the deep',
