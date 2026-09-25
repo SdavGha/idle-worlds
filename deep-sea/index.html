@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ตู้ปลาทะเลลึก</title>
+<title>Deep Sea Aquarium</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <meta name="theme-color" content="#062038">
@@ -129,41 +129,41 @@
 
 <div class="ui hud">
   <div class="pearl"><span class="gem"></span><span id="pearls">0</span></div>
-  <div class="rate" id="rate">+0 ต่อวินาที</div>
+  <div class="rate" id="rate">+0 / sec</div>
 </div>
 <div class="ui btns">
-  <button id="shopBtn">ร้านค้า</button>
-  <button id="bookBtn">สมุดสะสม</button>
+  <button id="shopBtn">Shop</button>
+  <button id="bookBtn">Collection</button>
 </div>
 <aside id="shop" class="ui glass shop hidden">
   <div class="tabs" id="shopTabs">
-    <button data-tab="real" class="on">สัตว์ทะเล</button>
-    <button data-tab="legend">ในตำนาน</button>
-    <button data-tab="decor">แต่งตู้</button>
+    <button data-tab="real" class="on">Sea Life</button>
+    <button data-tab="legend">Legends</button>
+    <button data-tab="decor">Decor</button>
   </div>
   <div id="list"></div>
 </aside>
 <section id="book" class="ui glass book hidden">
-  <header><h2>สมุดสะสมสัตว์</h2><span id="bookCount"></span><button id="bookClose">ปิด</button></header>
+  <header><h2>Collection Book</h2><span id="bookCount"></span><button id="bookClose">Close</button></header>
   <div class="tabs" id="bookTabs">
-    <button data-tab="real" class="on">สัตว์จริง</button>
-    <button data-tab="legend">สัตว์ในตำนาน</button>
+    <button data-tab="real" class="on">Real Animals</button>
+    <button data-tab="legend">Legendary</button>
   </div>
   <div id="bookDetail" class="detail hidden"></div>
   <div id="bookGrid" class="grid"></div>
 </section>
-<div class="ui hint">แตะน้ำเพื่อให้อาหาร · แตะสัตว์เพื่อดูว่ามันคือตัวอะไร · ลากเพื่อเลื่อนดูตู้</div>
+<div class="ui hint">Tap the water to feed · Tap an animal to learn about it · Drag to look around</div>
 <div class="ui parent">
   <div id="parentMenu" class="glass pmenu hidden">
-    <small>เมนูผู้ปกครอง</small>
-    <button id="fsBtn">เต็มจอ</button>
-    <button id="dualBtn" class="hidden">เต็มสองจอ</button>
-    <button id="exitBtn">ออกจากเต็มจอ</button>
+    <small>Parent menu</small>
+    <button id="fsBtn">Fullscreen</button>
+    <button id="dualBtn" class="hidden">Two screens</button>
+    <button id="exitBtn">Exit fullscreen</button>
   </div>
-  <button id="gear" class="gear" aria-label="เมนูผู้ปกครอง (กดค้าง 2 วินาที)">⚙</button>
+  <button id="gear" class="gear" aria-label="Parent menu (hold for 2 seconds)">⚙</button>
 </div>
 <div class="ui minimap" id="minimap"><div id="miniView"></div></div>
-<div id="viewTap" class="viewtap hidden">แตะจอนี้หนึ่งครั้งเพื่อเต็มจอ</div>
+<div id="viewTap" class="viewtap hidden">Tap this screen once to go fullscreen</div>
 <div id="card" class="glass card"><h3 id="cName"></h3><div class="zone" id="cZone"></div><p id="cFact"></p><div id="cAct"></div></div>
 <div id="toast" class="toast"></div>
 
@@ -532,55 +532,55 @@ function dAnon(c, t) {
 
 /* ================= species ================= */
 const SP = [
-  { id: 'clown', name: 'ปลาการ์ตูน', zone: [.08, .3], cost: 10, inc: .3, size: 2.6, speed: 9, eats: 1, max: 12, draw: dClown, box: [-1.4, -.9, 1, .6],
-    fact: 'อาศัยอยู่ในดอกไม้ทะเล มีเมือกพิเศษเคลือบตัว เข็มพิษของดอกไม้ทะเลเลยทำอะไรมันไม่ได้' },
-  { id: 'angel', name: 'ปลาเทวดา', zone: [.08, .3], cost: 60, inc: 1.2, size: 2.8, speed: 7, eats: 1, max: 10, draw: dAngel, box: [-1.3, -1.35, .9, 1.35],
-    fact: 'ตัวแบนบางเหมือนแผ่นกระดาษ ช่วยให้ว่ายลอดซอกปะการังแคบๆ ได้' },
-  { id: 'puffer', name: 'ปลาปักเป้า', zone: [.1, .32], cost: 250, inc: 4, size: 2.4, speed: 4, eats: 1, max: 10, draw: dPuffer, box: [-1.3, -1, 1, 1],
-    fact: 'เวลาตกใจจะกลืนน้ำเข้าไปจนตัวพองกลมเป็นลูกบอล ลองแตะมันดูสิ!' },
-  { id: 'turtle', name: 'เต่าทะเล', zone: [.06, .3], cost: 900, inc: 12, size: 4.6, speed: 5, eats: 1, max: 8, draw: dTurtle, box: [-1, -.9, 1.4, .9],
-    fact: 'ต้องขึ้นมาหายใจที่ผิวน้ำ แต่ตอนนอนพัก กลั้นหายใจได้นานหลายชั่วโมง' },
-  { id: 'sword', name: 'ปลาดาบ', zone: [.1, .42], cost: 2000, inc: 22, size: 4.4, speed: 10, eats: 1, max: 6, draw: dSword, box: [-1.5, -.85, 1.95, .5],
-    fact: 'ว่ายน้ำเร็วมาก และมีอวัยวะพิเศษคอยทำให้ตากับสมองอุ่น จึงมองเห็นชัดแม้อยู่ในน้ำเย็น' },
-  { id: 'jelly', name: 'แมงกะพรุน', zone: [.2, .55], cost: 3000, inc: 35, size: 3, speed: 2.5, eats: 0, max: 10, draw: dJelly, noflip: 1, box: [-.85, -.75, .85, 1.85],
-    fact: 'ไม่มีสมอง ไม่มีหัวใจ และไม่มีกระดูกเลยสักชิ้น' },
-  { id: 'whaleshark', name: 'ฉลามวาฬ', zone: [.08, .28], cost: 6000, inc: 60, size: 9, speed: 2.5, eats: 1, max: 2, draw: dWhaleShark, box: [-1.6, -.9, 1.1, .6],
-    fact: 'เป็นปลาที่ตัวใหญ่ที่สุดในโลก แต่ใจดีมาก กินแต่แพลงก์ตอนตัวจิ๋วๆ' },
-  { id: 'squid', name: 'หมึกยักษ์', zone: [.42, .72], cost: 10000, inc: 100, size: 4.8, speed: 5, eats: 0, max: 6, draw: dSquid, box: [-3.3, -.45, 1.95, .45],
-    fact: 'มีดวงตาใหญ่ที่สุดในบรรดาสัตว์ทั้งหมด ใหญ่ราวจานข้าวเลย' },
-  { id: 'angler', name: 'ปลาตกเบ็ด', zone: [.64, .86], cost: 30000, inc: 260, size: 3.6, speed: 3, eats: 0, max: 8, draw: dAngler, box: [-1.4, -1.35, 1.6, .8],
-    fact: 'มีไฟดวงเล็กห้อยอยู่บนหัว ใช้ล่อเหยื่อในทะเลลึกที่มืดสนิท' },
-  { id: 'vampire', name: 'หมึกแวมไพร์', zone: [.64, .86], cost: 60000, inc: 420, size: 3, speed: 2, eats: 0, max: 6, draw: dVampire, noflip: 1, box: [-1, -1.05, 1, .95],
-    fact: 'ชื่อน่ากลัวแต่ไม่ได้ดูดเลือดนะ มันกินเศษอาหารเล็กๆ ที่ลอยลงมาจากข้างบนเหมือนหิมะ' },
-  { id: 'gulper', name: 'ปลาไหลกัลเปอร์', zone: [.62, .86], cost: 90000, inc: 650, size: 3.2, speed: 4, eats: 0, max: 8, draw: dGulper, box: [-3.3, -.75, 1.2, .75],
-    fact: 'ปากใหญ่อ้าได้กว้างเหมือนถุง และปลายหางเรืองแสงได้' },
-  { id: 'dumbo', name: 'หมึกดัมโบ้', zone: [.68, .86], cost: 250000, inc: 1600, size: 3.2, speed: 3, eats: 0, max: 8, draw: dDumbo, noflip: 1, box: [-.95, -.85, .95, .85],
-    fact: 'มีครีบสองข้างเหมือนหูช้างดัมโบ้ อาศัยอยู่ลึกลงไปหลายพันเมตร' },
-  { id: 'bloop', name: 'เดอะบลูป', zone: [.74, .8], cost: 1000000, inc: 6000, size: 26, max: 1, draw: dBloop, box: [-2.3, -.9, 1.8, .9],
-    pass: { y: .77, secs: 45, msg: 'เดอะบลูปกำลังว่ายผ่านมา!' }, origin: 'เสียงลึกลับจากทะเลลึก',
-    fact: 'ปี 1997 นักวิทยาศาสตร์ได้ยินเสียงลึกลับใต้ทะเล ดังจนไมโครโฟนที่อยู่ห่างกันหลายพันกิโลเมตรได้ยิน ต่อมาพบว่าน่าจะเป็นเสียงภูเขาน้ำแข็งแตก แต่ในตู้นี้ บลูปคือยักษ์ใจดีแห่งทะเลลึก' },
+  { id: 'clown', name: 'Clownfish', zone: [.08, .3], cost: 10, inc: .3, size: 2.6, speed: 9, eats: 1, max: 12, draw: dClown, box: [-1.4, -.9, 1, .6],
+    fact: 'Lives inside sea anemones. A special slimy coat protects it from their stinging tentacles.' },
+  { id: 'angel', name: 'Angelfish', zone: [.08, .3], cost: 60, inc: 1.2, size: 2.8, speed: 7, eats: 1, max: 10, draw: dAngel, box: [-1.3, -1.35, .9, 1.35],
+    fact: 'Its body is thin and flat like paper, so it can slip through narrow gaps in the coral.' },
+  { id: 'puffer', name: 'Pufferfish', zone: [.1, .32], cost: 250, inc: 4, size: 2.4, speed: 4, eats: 1, max: 10, draw: dPuffer, box: [-1.3, -1, 1, 1],
+    fact: 'When it gets scared, it gulps water until it puffs up like a ball. Try tapping it!' },
+  { id: 'turtle', name: 'Sea Turtle', zone: [.06, .3], cost: 900, inc: 12, size: 4.6, speed: 5, eats: 1, max: 8, draw: dTurtle, box: [-1, -.9, 1.4, .9],
+    fact: 'It has to come up to breathe, but while resting it can hold its breath for hours.' },
+  { id: 'sword', name: 'Swordfish', zone: [.1, .42], cost: 2000, inc: 22, size: 4.4, speed: 10, eats: 1, max: 6, draw: dSword, box: [-1.5, -.85, 1.95, .5],
+    fact: 'A super-fast swimmer with a special organ that keeps its eyes and brain warm, so it sees clearly in cold water.' },
+  { id: 'jelly', name: 'Jellyfish', zone: [.2, .55], cost: 3000, inc: 35, size: 3, speed: 2.5, eats: 0, max: 10, draw: dJelly, noflip: 1, box: [-.85, -.75, .85, 1.85],
+    fact: 'No brain, no heart, and not a single bone.' },
+  { id: 'whaleshark', name: 'Whale Shark', zone: [.08, .28], cost: 6000, inc: 60, size: 9, speed: 2.5, eats: 1, max: 2, draw: dWhaleShark, box: [-1.6, -.9, 1.1, .6],
+    fact: 'The biggest fish in the world, but very gentle. It only eats tiny plankton.' },
+  { id: 'squid', name: 'Giant Squid', zone: [.42, .72], cost: 10000, inc: 100, size: 4.8, speed: 5, eats: 0, max: 6, draw: dSquid, box: [-3.3, -.45, 1.95, .45],
+    fact: 'It has the biggest eyes of any animal, about the size of a dinner plate.' },
+  { id: 'angler', name: 'Anglerfish', zone: [.64, .86], cost: 30000, inc: 260, size: 3.6, speed: 3, eats: 0, max: 8, draw: dAngler, box: [-1.4, -1.35, 1.6, .8],
+    fact: 'A little glowing light hangs from its head to lure prey in the pitch-dark deep sea.' },
+  { id: 'vampire', name: 'Vampire Squid', zone: [.64, .86], cost: 60000, inc: 420, size: 3, speed: 2, eats: 0, max: 6, draw: dVampire, noflip: 1, box: [-1, -1.05, 1, .95],
+    fact: 'Scary name, but it doesn\'t drink blood! It eats tiny bits of food that drift down like snow.' },
+  { id: 'gulper', name: 'Gulper Eel', zone: [.62, .86], cost: 90000, inc: 650, size: 3.2, speed: 4, eats: 0, max: 8, draw: dGulper, box: [-3.3, -.75, 1.2, .75],
+    fact: 'Its huge mouth opens wide like a bag, and the tip of its tail glows.' },
+  { id: 'dumbo', name: 'Dumbo Octopus', zone: [.68, .86], cost: 250000, inc: 1600, size: 3.2, speed: 3, eats: 0, max: 8, draw: dDumbo, noflip: 1, box: [-.95, -.85, .95, .85],
+    fact: 'Its two fins look like Dumbo the elephant\'s ears. It lives thousands of meters deep.' },
+  { id: 'bloop', name: 'The Bloop', zone: [.74, .8], cost: 1000000, inc: 6000, size: 26, max: 1, draw: dBloop, box: [-2.3, -.9, 1.8, .9],
+    pass: { y: .77, secs: 45, msg: 'The Bloop is swimming by!' }, origin: 'A mystery sound from the deep',
+    fact: 'In 1997 scientists heard a mysterious sound under the sea, so loud that microphones thousands of kilometers apart picked it up. It was most likely an iceberg cracking. But in this tank, the Bloop is the gentle giant of the deep.' },
 
-  { id: 'mermaid', legend: 1, name: 'นางสุวรรณมัจฉา', zone: [.08, .3], cost: 1e7, inc: 1e4, size: 4.5, speed: 5, eats: 1, max: 1, draw: dMermaid, box: [-1.6, -.7, 1.2, .5],
-    origin: 'ตำนานไทย · เรื่องรามเกียรติ์',
-    fact: 'นางเงือกครึ่งคนครึ่งปลาจากเรื่องรามเกียรติ์ เป็นลูกสาวของทศกัณฐ์ ตัวเป็นสีทองอร่ามทั้งตัว' },
-  { id: 'kraken', legend: 1, name: 'คราเคน', zone: [.66, .82], cost: 4e7, inc: 3e4, size: 10, speed: 1.5, max: 1, draw: dKraken, noflip: 1, box: [-1.5, -1.1, 1.5, 1.5],
-    origin: 'ตำนานชาวเรือนอร์เวย์',
-    fact: 'ชาวเรือเล่ากันว่ามันตัวใหญ่จนคนนึกว่าเป็นเกาะ นักวิทยาศาสตร์คิดว่าเรื่องนี้อาจมาจากหมึกยักษ์ตัวจริง' },
-  { id: 'megalodon', legend: 1, name: 'เมกาโลดอน', cost: 1.5e8, inc: 8e4, size: 16, max: 1, draw: dMegalodon, box: [-1.6, -.9, 1.6, .7],
-    pass: { y: .45, secs: 22, msg: 'ระวัง! เมกาโลดอนว่ายผ่านมา' }, origin: 'สัตว์จริงที่สูญพันธุ์ไปแล้ว',
-    fact: 'ฉลามยักษ์ตัวจริงที่เคยมีชีวิตอยู่ สูญพันธุ์ไปราว 3.6 ล้านปีก่อน ฟันของมันใหญ่กว่าฝ่ามือผู้ใหญ่' },
-  { id: 'serpent', legend: 1, name: 'งูทะเลยักษ์', zone: [.36, .6], cost: 5e8, inc: 2e5, size: 4, speed: 4, max: 1, draw: dSerpent, box: [-3.9, -.9, 1.3, .7],
-    origin: 'เรื่องเล่าของนักเดินเรือ',
-    fact: 'ชาวเรือสมัยก่อนเล่าว่าเห็นงูยักษ์ในทะเล บางเรื่องอาจมาจากปลาออร์ฟิช ปลาตัวแบนยาวที่ยาวได้หลายเมตร' },
-  { id: 'naga', legend: 1, name: 'พญานาค', zone: [.4, .7], cost: 1.5e9, inc: 5e5, size: 4.5, speed: 4, max: 1, draw: dNaga, box: [-3.9, -1.15, 1.3, .7],
-    origin: 'ตำนานไทยและลาว',
-    fact: 'งูยักษ์ในตำนาน ว่ากันว่าอาศัยอยู่ในเมืองบาดาลใต้แม่น้ำโขง' },
-  { id: 'leviathan', legend: 1, name: 'เลวีอาธาน', cost: 5e9, inc: 1.2e6, size: 22, max: 1, draw: dLeviathan, box: [-4.9, -1.1, 1.4, .9],
-    pass: { y: .74, secs: 55, msg: 'เลวีอาธานตื่นขึ้นมาแล้ว...' }, origin: 'ตำนานโบราณหลายพันปี',
-    fact: 'สัตว์ทะเลยักษ์จากตำนานโบราณ ถูกเล่าถึงในคัมภีร์ไบเบิล' },
-  { id: 'anon', legend: 1, name: 'ปลาอานนท์', cost: 2e10, inc: 3e6, size: 24, max: 1, draw: dAnon, box: [-1.8, -1.4, 1.95, .9],
-    pass: { y: .86, secs: 80, msg: 'ปลาอานนท์ขยับตัว... พื้นทะเลสั่นเบาๆ', shake: 1 }, origin: 'ตำนานไทย',
-    fact: 'ตำนานไทยเล่าว่าโลกของเราตั้งอยู่บนหลังปลายักษ์ตัวนี้ เวลามันขยับตัว แผ่นดินก็ไหว' },
+  { id: 'mermaid', legend: 1, name: 'Suvannamaccha', zone: [.08, .3], cost: 1e7, inc: 1e4, size: 4.5, speed: 5, eats: 1, max: 1, draw: dMermaid, box: [-1.6, -.7, 1.2, .5],
+    origin: 'Thai legend · the Ramakien',
+    fact: 'A golden mermaid, half human and half fish, from the Ramakien, the Thai version of the Ramayana. She is the daughter of the demon king Thotsakan.' },
+  { id: 'kraken', legend: 1, name: 'Kraken', zone: [.66, .82], cost: 4e7, inc: 3e4, size: 10, speed: 1.5, max: 1, draw: dKraken, noflip: 1, box: [-1.5, -1.1, 1.5, 1.5],
+    origin: 'Norwegian sailors\' legend',
+    fact: 'Sailors said it was so big that people mistook it for an island. Scientists think the stories may have come from real giant squid.' },
+  { id: 'megalodon', legend: 1, name: 'Megalodon', cost: 1.5e8, inc: 8e4, size: 16, max: 1, draw: dMegalodon, box: [-1.6, -.9, 1.6, .7],
+    pass: { y: .45, secs: 22, msg: 'Look out! A Megalodon is swimming by' }, origin: 'A real animal, now extinct',
+    fact: 'A real giant shark that once lived. It went extinct about 3.6 million years ago, and its teeth were bigger than a grown-up\'s hand.' },
+  { id: 'serpent', legend: 1, name: 'Sea Serpent', zone: [.36, .6], cost: 5e8, inc: 2e5, size: 4, speed: 4, max: 1, draw: dSerpent, box: [-3.9, -.9, 1.3, .7],
+    origin: 'Old sailors\' tales',
+    fact: 'Sailors long ago said they saw giant snakes in the sea. Some stories may have come from the oarfish, a long, flat fish that grows several meters long.' },
+  { id: 'naga', legend: 1, name: 'Phaya Naga', zone: [.4, .7], cost: 1.5e9, inc: 5e5, size: 4.5, speed: 4, max: 1, draw: dNaga, box: [-3.9, -1.15, 1.3, .7],
+    origin: 'Thai and Lao legend',
+    fact: 'A giant serpent from legend, said to live in an underwater city beneath the Mekong River.' },
+  { id: 'leviathan', legend: 1, name: 'Leviathan', cost: 5e9, inc: 1.2e6, size: 22, max: 1, draw: dLeviathan, box: [-4.9, -1.1, 1.4, .9],
+    pass: { y: .74, secs: 55, msg: 'The Leviathan has woken up...' }, origin: 'An ancient legend, thousands of years old',
+    fact: 'A giant sea creature from ancient legends, mentioned in the Bible.' },
+  { id: 'anon', legend: 1, name: 'Pla Anon', cost: 2e10, inc: 3e6, size: 24, max: 1, draw: dAnon, box: [-1.8, -1.4, 1.95, .9],
+    pass: { y: .86, secs: 80, msg: 'Pla Anon is moving... the seabed is shaking', shake: 1 }, origin: 'Thai legend',
+    fact: 'A Thai legend says our whole world rests on the back of this giant fish. When it moves, the earth shakes.' },
 ];
 const BY = Object.fromEntries(SP.map(s => [s.id, s]));
 
@@ -655,16 +655,16 @@ function ddCastle(c, t) {
   for (const x of [-.45, .45, -1, 1]) ell(c, x, -.55, .05, .07, `rgba(160,255,235,${.5 + .4 * Math.sin(t * 1.5 + x * 3)})`);
 }
 const DECOR = [
-  { id: 'coral', name: 'ปะการังเรืองแสง', cost: 5000, bonus: .05, xs: [.07, .4, .77], size: 6, draw: ddCoral, box: [-.8, -1.25, .8, .1],
-    desc: 'สัตว์ทะเลลึกหลายชนิดเรืองแสงได้เอง เพราะแสงแดดส่องลงไปไม่ถึง' },
-  { id: 'chest', name: 'หีบสมบัติ', cost: 50000, bonus: 0, xs: [.53], size: 5, draw: ddChest, box: [-.75, -1.2, .9, .12],
-    desc: 'เปิดออกเองเป็นพักๆ แล้วมีไข่มุกทะลักออกมา' },
-  { id: 'ship', name: 'เรือจม', cost: 5e5, bonus: .10, xs: [.24], size: 11, draw: ddShip, box: [-1.2, -1.6, 1.3, .2],
-    desc: 'เรือเก่าที่จมลงสู่ก้นทะเล กลายเป็นบ้านหลังใหม่ของสัตว์ทะเล' },
-  { id: 'vent', name: 'ปล่องน้ำร้อน', cost: 5e6, bonus: .15, xs: [.93], size: 7, draw: ddVent, box: [-.9, -3.4, .9, .1],
-    desc: 'ปล่องน้ำร้อนใต้ทะเลลึก น้ำที่พุ่งออกมาร้อนกว่าน้ำเดือด แต่ก็ยังมีสัตว์อาศัยอยู่รอบๆ ได้' },
-  { id: 'castle', name: 'เมืองบาดาล', cost: 1e8, bonus: .25, xs: [.62], size: 9, draw: ddCastle, box: [-1.4, -2.5, 1.4, .1],
-    desc: 'เมืองใต้น้ำของพญานาคตามตำนานไทย' },
+  { id: 'coral', name: 'Glowing Coral', cost: 5000, bonus: .05, xs: [.07, .4, .77], size: 6, draw: ddCoral, box: [-.8, -1.25, .8, .1],
+    desc: 'Many deep-sea creatures make their own light, because sunlight can\'t reach that deep.' },
+  { id: 'chest', name: 'Treasure Chest', cost: 50000, bonus: 0, xs: [.53], size: 5, draw: ddChest, box: [-.75, -1.2, .9, .12],
+    desc: 'Pops open every now and then, and pearls come spilling out.' },
+  { id: 'ship', name: 'Shipwreck', cost: 5e5, bonus: .10, xs: [.24], size: 11, draw: ddShip, box: [-1.2, -1.6, 1.3, .2],
+    desc: 'An old ship that sank to the seabed and became a new home for sea creatures.' },
+  { id: 'vent', name: 'Hydrothermal Vent', cost: 5e6, bonus: .15, xs: [.93], size: 7, draw: ddVent, box: [-.9, -3.4, .9, .1],
+    desc: 'A hot spring deep under the sea. The water shooting out is hotter than boiling, yet animals still live all around it.' },
+  { id: 'castle', name: 'Naga City', cost: 1e8, bonus: .25, xs: [.62], size: 9, draw: ddCastle, box: [-1.4, -2.5, 1.4, .1],
+    desc: 'The underwater city of the Phaya Naga from Thai legend.' },
 ];
 
 /* ================= state ================= */
@@ -674,7 +674,7 @@ const KEY = 'deepsea-aquarium-v1';
 let state = { pearls: 15, owned: { clown: 2 }, decor: {}, lastSeen: Date.now() };
 try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.owned) state = s; } catch (e) {}
 state.decor = state.decor || {};
-// Pearl vault cap: well above the most expensive item (20,000 ล้าน) so nothing ever becomes unreachable,
+// Pearl vault cap: well above the most expensive item (20 billion) so nothing ever becomes unreachable,
 // but low enough that numbers stay exact and readable no matter how long the tank runs.
 const CAP = 1e11;
 function addPearls(n) { if (Number.isFinite(n) && n > 0) state.pearls = Math.min(CAP, state.pearls + n); }
@@ -694,7 +694,8 @@ function fmt(n) {
   if (n < 10 && n % 1) return n.toFixed(1);
   if (n < 1e6) return Math.floor(n).toLocaleString('en-US');
   const m = n / 1e6;
-  return (m < 100 ? (Math.floor(m * 10) / 10).toString() : Math.floor(m).toLocaleString('en-US')) + ' ล้าน';
+  if (m < 1000) return (Math.floor(m * 10) / 10) + 'M';
+  return (Math.floor(m / 100) / 10).toLocaleString('en-US') + 'B';
 }
 
 /* ================= world & camera =================
@@ -839,12 +840,12 @@ function hitCreature(o, x, y) {
   return inBox(o.sp, lx, ly);
 }
 function release(sp, o) {
-  if (creatures.filter(c => !c.leaving).length <= 1) { toast('ต้องเหลือสัตว์ในตู้อย่างน้อย 1 ตัวนะ'); return false; }
+  if (creatures.filter(c => !c.leaving).length <= 1) { toast('Keep at least 1 animal in the tank'); return false; }
   o = o && !o.leaving ? o : creatures.find(c => c.sp === sp && !c.leaving);
   if (!o) return false;
   o.leaving = true; o.face = o.x < WW / 2 ? -1 : 1;
   state.owned[sp.id] = Math.max(0, (state.owned[sp.id] || 0) - 1);
-  toast(sp.name + 'ว่ายกลับบ้านในทะเลแล้ว');
+  toast(sp.name + ' swam home to the sea');
   save(); updateHud(); return true;
 }
 function releaseById(id) { const o = creatures.find(c => c.id === id); return o ? release(o.sp, o) : false; }
@@ -862,7 +863,7 @@ function startPass(sp, tease) {
   const secs = tease ? sp.pass.secs : sp.pass.secs * 2;
   pass = { sp, tease, dir, x: x0, x0, x1, y: H * sp.pass.y, s, t: 0, speed: Math.abs(x1 - x0) / secs };
   lastPass = sp.id;
-  toast(tease ? 'มีอะไรบางอย่างตัวใหญ่มาก... ว่ายอยู่ในทะเล' : sp.pass.msg);
+  toast(tease ? 'Something very big... is swimming in the sea' : sp.pass.msg);
 }
 function schedulePass() {
   const owned = PASSERS.filter(has), cand = teaseCandidate();
@@ -991,9 +992,9 @@ function drawPlants(t) {
 function drawLabels() {
   ctx.font = `${Math.max(12, u * 1.5)}px "Leelawadee UI","Segoe UI",sans-serif`; ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(255,255,255,.3)';
   const x = VW / vs - u * 2;
-  ctx.fillText('โซนแสงแดด · 0–200 ม.', x, H * .33 - u);
-  ctx.fillText('โซนแสงสลัว · 200–1,000 ม.', x, H * .62 - u);
-  ctx.fillText('โซนเที่ยงคืน · ลึกกว่า 1,000 ม.', x, H * .62 + u * 3);
+  ctx.fillText('Sunlight zone · 0–200 m', x, H * .33 - u);
+  ctx.fillText('Twilight zone · 200–1,000 m', x, H * .62 - u);
+  ctx.fillText('Midnight zone · deeper than 1,000 m', x, H * .62 + u * 3);
 }
 
 /* ================= shared cosmetic updates (both windows run these on their own) ================= */
@@ -1220,22 +1221,22 @@ async function startDual() {
   try {
     if (!screenDetails) {
       screenDetails = await window.getScreenDetails();
-      toast('อนุญาตแล้ว กดปุ่ม "เต็มสองจอ" อีกครั้งได้เลย');
+      toast('Allowed. Press "Two screens" again.');
       return;
     }
     const cur = screenDetails.currentScreen, other = screenDetails.screens.find(s => s !== cur);
-    if (!other) { toast('หาจอที่สองไม่เจอ'); return; }
+    if (!other) { toast('Couldn\'t find a second screen'); return; }
     const url = location.href.split('#')[0] + '#view';
     const feat = `popup,fullscreen,left=${other.availLeft},top=${other.availTop},width=${other.availWidth},height=${other.availHeight}`;
     companion = window.open(url, 'aquarium-view', feat);
     wantFS = 'dual'; goFullscreen(); closeParent();
-    if (!companion) { toast('เบราว์เซอร์บล็อกหน้าต่างที่สอง ลองกดอีกครั้ง'); return; }
+    if (!companion) { toast('The browser blocked the second window. Try again.'); return; }
     slot = cur.left < other.left ? 0 : 1; companionSlot = 1 - slot; span = 2;
     camX = clamp(camX, 0, maxCam()); syncPhase(); keepAwake();
-    toast('แตะจออีกจอหนึ่งครั้ง เพื่อให้เต็มจอ');
+    toast('Tap the other screen once to make it fullscreen');
   } catch (e) {
     screenDetails = null;
-    toast('เปิดสองจอไม่ได้ เบราว์เซอร์ไม่ยอมให้สิทธิ์จัดการหลายจอ');
+    toast('Two screens didn\'t work: the browser won\'t allow using multiple screens');
   }
 }
 function endDual() {
@@ -1267,8 +1268,8 @@ function updateHud() {
   $('pearls').textContent = fmt(state.pearls);
   const m = mult();
   $('rate').textContent = state.pearls >= CAP
-    ? `คลังไข่มุกเต็มแล้ว (สูงสุด ${fmt(CAP)})`
-    : '+' + fmt(income()) + ' ต่อวินาที' + (m > 1 ? `  (ของแต่งตู้ +${Math.round((m - 1) * 100)}%)` : '');
+    ? `Pearl vault full (max ${fmt(CAP)})`
+    : '+' + fmt(income()) + ' / sec' + (m > 1 ? `  (decor +${Math.round((m - 1) * 100)}%)` : '');
   const mv = $('miniView'); mv.style.left = (camX / WW * 100) + '%'; mv.style.width = (span * W / WW * 100) + '%';
   if (!$('shop').classList.contains('hidden')) updateShop();
 }
@@ -1285,13 +1286,13 @@ function buildShop() {
     row.append(pv, info);
     if (!open) {
       const i = SP.indexOf(it);
-      info.innerHTML = `<b>???</b><small>สัตว์ลึกลับ ซื้อ${SP[i - 1].name}ก่อนนะ</small>`;
+      info.innerHTML = `<b>???</b><small>Mystery animal. Buy the ${SP[i - 1].name} first</small>`;
     } else {
       const btn = document.createElement('button'); btn.className = 'buy';
       btn.onclick = () => isDecor ? buyDecor(it) : buy(it);
       let rel = null;
       const acts = document.createElement('div'); acts.className = 'acts';
-      if (!isDecor && !it.pass) { rel = confirmBtn('ปล่อย 1', () => release(it)); acts.append(rel); }
+      if (!isDecor && !it.pass) { rel = confirmBtn('Release 1', () => release(it)); acts.append(rel); }
       acts.append(btn); row.append(acts); rows.push({ it, info, btn, rel, isDecor });
     }
     list.append(row);
@@ -1303,24 +1304,24 @@ function updateShop() {
   for (const r of rows) {
     if (r.isDecor) {
       const own = !!state.decor[r.it.id];
-      r.btn.textContent = own ? 'มีแล้ว' : '◉ ' + fmt(r.it.cost);
+      r.btn.textContent = own ? 'Owned' : '◉ ' + fmt(r.it.cost);
       r.btn.disabled = own || state.pearls < r.it.cost;
-      r.info.innerHTML = `<b>${r.it.name}</b><small>${r.it.bonus ? '+' + Math.round(r.it.bonus * 100) + '% ไข่มุกทั้งตู้' : r.it.desc}</small>`;
+      r.info.innerHTML = `<b>${r.it.name}</b><small>${r.it.bonus ? '+' + Math.round(r.it.bonus * 100) + '% pearls for the whole tank' : r.it.desc}</small>`;
       continue;
     }
     const sp = r.it, n = state.owned[sp.id] || 0, full = n >= sp.max, p = price(sp);
-    r.btn.textContent = full ? (sp.max === 1 ? 'มีแล้ว' : 'เต็มตู้แล้ว') : '◉ ' + fmt(p);
+    r.btn.textContent = full ? (sp.max === 1 ? 'Owned' : 'Tank full') : '◉ ' + fmt(p);
     r.btn.disabled = full || state.pearls < p;
     if (r.rel) r.rel.classList.toggle('hidden', n === 0);
-    const note = sp.pass ? 'แวะมาเยี่ยมเป็นพักๆ' : `มี ${n}/${sp.max}`;
-    r.info.innerHTML = `<b>${sp.name}</b><small>${note} · +${fmt(sp.inc)} ต่อวินาที</small>`;
+    const note = sp.pass ? 'Visits now and then' : `Have ${n}/${sp.max}`;
+    r.info.innerHTML = `<b>${sp.name}</b><small>${note} · +${fmt(sp.inc)} / sec</small>`;
   }
 }
 function buy(sp) {
   const p = price(sp), n = state.owned[sp.id] || 0;
   if (state.pearls < p || n >= sp.max) return;
   state.pearls -= p; state.owned[sp.id] = n + 1;
-  if (sp.pass) { if (!pass) passTimer = 4; toast(sp.name + 'มาอยู่ในทะเลของเราแล้ว! รอดูมันว่ายผ่านนะ'); showSpecies(sp); }
+  if (sp.pass) { if (!pass) passTimer = 4; toast(sp.name + ' now lives in our sea! Watch for it swimming by'); showSpecies(sp); }
   else { const o = spawn(sp, false); showSpecies(sp, o); }
   save(); updateHud();
 }
@@ -1329,7 +1330,7 @@ function buyDecor(d) {
   state.pearls -= d.cost; state.decor[d.id] = 1;
   if (d.id === 'chest') { chest.t = 8; chest.phase = 0; }
   const x = WW * d.xs[0]; camX = clamp(x - span * W / 2, 0, maxCam()); autoPause = T + 20; syncPhase();
-  showInfo(d.name, 'ของแต่งตู้', d.desc); save(); updateHud();
+  showInfo(d.name, 'Decoration', d.desc); save(); updateHud();
 }
 document.querySelectorAll('#shopTabs button').forEach(b => b.onclick = () => {
   shopTab = b.dataset.tab; document.querySelectorAll('#shopTabs button').forEach(x => x.classList.toggle('on', x === b)); updateShop();
@@ -1339,7 +1340,7 @@ document.querySelectorAll('#shopTabs button').forEach(b => b.onclick = () => {
 let bookTab = 'real', bookSel = null;
 function renderBook() {
   const all = SP.length, found = SP.filter(has).length;
-  $('bookCount').textContent = `เจอแล้ว ${found} จาก ${all} ตัว`;
+  $('bookCount').textContent = `Found ${found} of ${all}`;
   const grid = $('bookGrid'); grid.innerHTML = '';
   for (const sp of SP.filter(s => bookTab === 'legend' ? s.legend : !s.legend)) {
     const known = has(sp);
@@ -1358,17 +1359,17 @@ function renderBook() {
   if (known) {
     box.innerHTML = `<h3>${bookSel.name}</h3><div class="zone">${bookSel.legend || bookSel.pass ? bookSel.origin : zoneName(bookSel)}</div><p>${bookSel.fact}</p>`;
     if (bookSel.pass) {
-      const b = document.createElement('button'); b.textContent = 'เรียกมาว่ายให้ดู';
+      const b = document.createElement('button'); b.textContent = 'Call it to swim by';
       b.onclick = () => {
-        if (pass) { toast('รอให้ตัวที่ว่ายอยู่ผ่านไปก่อนนะ'); return; }
+        if (pass) { toast('Wait for the one swimming now to pass by'); return; }
         startPass(bookSel, false); passTimer = rand(150, 240); $('book').classList.add('hidden'); wake();
       };
       box.append(b);
     }
   } else {
     box.innerHTML = unlocked(bookSel)
-      ? `<h3>???</h3><div class="zone">ยังไม่เคยเจอ</div><p>เก็บไข่มุกให้ได้ ${fmt(price(bookSel))} เม็ด แล้วไปซื้อที่ร้านค้าได้เลย</p>`
-      : `<h3>???</h3><div class="zone">ยังไม่เคยเจอ</div><p>ต้องซื้อ${SP[SP.indexOf(bookSel) - 1].name}ก่อน ถึงจะได้รู้ว่าตัวนี้คืออะไร</p>`;
+      ? `<h3>???</h3><div class="zone">Not found yet</div><p>Collect ${fmt(price(bookSel))} pearls, then buy it in the Shop.</p>`
+      : `<h3>???</h3><div class="zone">Not found yet</div><p>Buy the ${SP[SP.indexOf(bookSel) - 1].name} first to find out what this is.</p>`;
   }
   det.append(box);
 }
@@ -1382,11 +1383,11 @@ $('bookClose').onclick = () => { $('book').classList.add('hidden'); wake(); };
 let cardT, toastT;
 function zoneName(sp) {
   const m = (sp.zone[0] + sp.zone[1]) / 2;
-  return m < .33 ? 'โซนแสงแดด · 0–200 เมตร' : m < .62 ? 'โซนแสงสลัว · 200–1,000 เมตร' : 'โซนเที่ยงคืน · ลึกกว่า 1,000 เมตร';
+  return m < .33 ? 'Sunlight zone · 0–200 meters' : m < .62 ? 'Twilight zone · 200–1,000 meters' : 'Midnight zone · deeper than 1,000 meters';
 }
 function showInfo(title, sub, text, releaseId) {
   $('cName').textContent = title; $('cZone').textContent = sub; $('cFact').textContent = text; $('cAct').innerHTML = '';
-  if (releaseId) $('cAct').append(confirmBtn('ปล่อยตัวนี้คืนทะเล', () => {
+  if (releaseId) $('cAct').append(confirmBtn('Release back to the sea', () => {
     if (IS_VIEW) window.opener && window.opener.postMessage({ type: 'release', id: releaseId }, '*');
     else releaseById(releaseId);
     $('card').classList.remove('show');
@@ -1402,7 +1403,7 @@ function confirmBtn(label, fn, cls = 'rel') {
   let armed = false, tm;
   b.onclick = e => {
     e.stopPropagation();
-    if (!armed) { armed = true; b.textContent = 'แตะอีกครั้งเพื่อยืนยัน'; tm = setTimeout(() => { armed = false; b.textContent = label; }, 3000); return; }
+    if (!armed) { armed = true; b.textContent = 'Tap again to confirm'; tm = setTimeout(() => { armed = false; b.textContent = label; }, 3000); return; }
     clearTimeout(tm); armed = false; b.textContent = label; fn();
   };
   return b;
@@ -1421,9 +1422,9 @@ function tapAt(wx, wy, fromView) {
     const o = creatures[i];
     if (!o.leaving && hitCreature(o, wx, wy)) { card = speciesCard(o.sp, o); if (o.sp.id === 'puffer') o.puffT = 2.5; }
   }
-  if (!card) for (const p of decorSpots()) if (inBox(p.d, (wx - p.x) / p.s, (wy - p.y) / p.s)) { card = [p.d.name, 'ของแต่งตู้', p.d.desc, 0]; break; }
+  if (!card) for (const p of decorSpots()) if (inBox(p.d, (wx - p.x) / p.s, (wy - p.y) / p.s)) { card = [p.d.name, 'Decoration', p.d.desc, 0]; break; }
   if (!card && hitPass(wx, wy)) card = pass.tease
-    ? ['???', 'สัตว์ลึกลับ', `มีบางอย่างตัวใหญ่มากอาศัยอยู่ในทะเล... เก็บไข่มุกให้ได้ ${fmt(price(pass.sp))} เม็ด แล้วจะได้รู้จักมัน`, 0]
+    ? ['???', 'Mystery animal', `Something very big lives in the sea... Collect ${fmt(price(pass.sp))} pearls to meet it.`, 0]
     : speciesCard(pass.sp);
   if (card) { if (fromView) post({ type: 'card', card }); else showInfo(...card); return; }
   if (wy < H * .6) for (let i = 0; i < 4 && pellets.length < 60; i++) pellets.push({ x: wx + rand(-2, 2) * u, y: wy + rand(-1, 1) * u, ph: rand(0, 9) });
@@ -1523,8 +1524,8 @@ function startMain() {
   if (away > 60) {
     const got = income() * Math.min(away, 12 * 3600) * .5;
     addPearls(got);
-    setTimeout(() => toast('ระหว่างที่ปิดตู้ไป สัตว์ในตู้เก็บไข่มุกไว้ให้ ' + fmt(got) + ' เม็ด'), 600);
-  } else setTimeout(() => toast('แตะน้ำเพื่อให้อาหารปลา ลากเพื่อเลื่อนดูตู้ แล้วเปิดร้านค้าเพื่อซื้อสัตว์ตัวใหม่'), 600);
+    setTimeout(() => toast('While the tank was closed, your animals collected ' + fmt(got) + ' pearls'), 600);
+  } else setTimeout(() => toast('Tap the water to feed the fish, drag to look around, and open the Shop to buy new animals'), 600);
   passTimer = PASSERS.some(has) ? 30 : 90;
   prepareDual();
   wake();

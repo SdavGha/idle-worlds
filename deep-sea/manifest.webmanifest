@@ -1,7 +1,7 @@
 {
-  "name": "ตู้ปลาทะเลลึก",
-  "short_name": "ตู้ปลา",
-  "lang": "th",
+  "name": "Deep Sea Aquarium",
+  "short_name": "Aquarium",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
