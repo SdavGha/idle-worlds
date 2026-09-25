@@ -42,7 +42,7 @@
   .locked .info{opacity:.6}
   .buy{padding:8px 12px;font-size:15px;white-space:nowrap}
   .acts{display:flex;gap:8px;align-items:center}
-  body.book-open .card{display:none}
+  body.book-open .card,body.panel-open .toast{display:none}
   /* Phones: shop becomes a bottom sheet, rows get compact, and nothing stacks on top of the shop. */
   @media (max-width:560px){
     .hud{top:10px;left:10px;padding:6px 12px;border-radius:14px}
@@ -53,7 +53,7 @@
     .btns button{font-size:14px;padding:8px 12px}
     .hint{display:none}
     .toast{top:66px;font-size:14px;padding:8px 14px}
-    body.panel-open .toast{display:none}
+
     .shop{top:auto;bottom:0;left:0;right:0;width:auto;max-height:58vh;border-radius:20px 20px 0 0;padding:10px 10px 16px}
     .tabs button{font-size:13px;padding:7px 4px}
     .row{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:8px;padding:6px 4px}
