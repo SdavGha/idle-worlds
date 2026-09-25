@@ -282,6 +282,7 @@ function dTreeFrog(c) {
 function dToucan(c, t) {
   const w = Math.sin(t * 10) * .35;
   c.fillStyle = '#15151b'; c.beginPath(); c.moveTo(-.6, .05); c.lineTo(-1.35, .35); c.lineTo(-1.3, .5); c.lineTo(-.55, .3); c.fill();
+  limb(c, .28, -.14, .5, .16, Math.PI + .3 + Math.sin(t * 10 - .4) * .35 * .9, '#0a0a0e');
   ell(c, -.1, .08, .75, .48, '#15151b');
   ell(c, -.1, .45, .28, .1, '#e8313a');
   ell(c, .42, -.22, .32, .3, '#15151b');
@@ -290,7 +291,7 @@ function dToucan(c, t) {
   c.fillStyle = g; c.beginPath(); c.moveTo(.58, -.4); c.quadraticCurveTo(1.45, -.5, 1.7, -.12); c.quadraticCurveTo(1.25, -.02, .6, -.1); c.closePath(); c.fill();
   c.strokeStyle = 'rgba(0,0,0,.3)'; c.lineWidth = .02; c.beginPath(); c.moveTo(.62, -.25); c.quadraticCurveTo(1.2, -.28, 1.66, -.14); c.stroke();
   ell(c, .45, -.28, .11, .11, '#5ad1ff'); ell(c, .46, -.28, .055, .055, '#111'); ell(c, .48, -.3, .02, .02, '#fff');
-  limb(c, -.15, -.05, .5, .18, -.2 + w * .6, '#26262e');
+  limb(c, .2, -.05, .55, .18, Math.PI + .1 + w * .9, '#26262e');
   c.strokeStyle = '#6b5a3a'; c.lineWidth = .05; c.beginPath(); c.moveTo(0, .5); c.lineTo(0, .66); c.moveTo(.15, .5); c.lineTo(.15, .66); c.stroke();
 }
 function dChameleon(c, t, o) {
@@ -310,8 +311,10 @@ function dMacaw(c, t) {
   const w = Math.sin(t * 9) * .5;
   c.fillStyle = '#d21f2b'; c.beginPath(); c.moveTo(-.5, .05); c.lineTo(-1.7, .35); c.lineTo(-1.65, .5); c.lineTo(-.45, .25); c.fill();
   c.fillStyle = '#2a5bd7'; c.beginPath(); c.moveTo(-.6, .1); c.lineTo(-1.45, .45); c.lineTo(-1.4, .52); c.lineTo(-.55, .22); c.fill();
+  c.save(); c.translate(.06, -.14); c.rotate(.35 + Math.sin(t * 9 - .4) * .5 * .9);
+  ell(c, -.25, 0, .6, .22, '#1c3f99'); ell(c, -.05, 0, .4, .2, '#23803a'); c.restore();
   ell(c, 0, .05, .7, .42, '#e3262f');
-  c.save(); c.translate(-.05, -.05); c.rotate(-.15 + w * .6);
+  c.save(); c.translate(-.05, -.05); c.rotate(.15 + w * .9);
   ell(c, -.25, 0, .6, .22, '#2a5bd7'); ell(c, -.05, 0, .4, .2, '#34b24a'); ell(c, .1, 0, .25, .17, '#ffd02e'); c.restore();
   ell(c, .5, -.2, .3, .28, '#e3262f');
   ell(c, .6, -.2, .16, .14, '#fbeee6'); ell(c, .6, -.22, .05, .05, '#111');
@@ -442,10 +445,10 @@ function dHarpy(c, t) {
     c.restore();
   };
   // far wing behind the body, a little out of step with the near one
-  wing(.12, -.12, -1.35 + Math.sin(t * 5 - .35) * .8, '#3a3f47', '#2c2f35');
+  wing(.12, -.12, .6 + Math.sin(t * 5 - .35) * .75, '#3a3f47', '#2c2f35');
   c.fillStyle = '#3a3d44'; c.beginPath(); c.moveTo(-.45, .1); c.lineTo(-1.05, .35); c.lineTo(-.95, .5); c.lineTo(-.4, .3); c.fill();
   ell(c, 0, .05, .6, .38, '#5a606a'); ell(c, .1, .15, .4, .25, '#f4f1ea'); ell(c, .2, -.05, .3, .08, '#2a2d33');
-  wing(0, -.02, -1.1 + f * .8, '#4f555e', '#3a3d44');
+  wing(0, -.02, .45 + f * .75, '#4f555e', '#3a3d44');
   c.fillStyle = '#3a3d44';
   c.beginPath(); c.moveTo(.4, -.38); c.lineTo(.2, -.72); c.lineTo(.5, -.45); c.fill();
   c.beginPath(); c.moveTo(.5, -.42); c.lineTo(.42, -.78); c.lineTo(.62, -.45); c.fill();
@@ -504,8 +507,9 @@ function serpentBody(c, t, o) {
 function dKinnaree(c, t) {
   const f = Math.sin(t * 4);
   c.fillStyle = '#fff7e8'; c.beginPath(); c.moveTo(-.6, .1); c.lineTo(-1.2, -.1); c.lineTo(-1.1, .1); c.lineTo(-1.25, .25); c.lineTo(-.55, .3); c.fill();
-  c.save(); c.translate(-.1, -.05); c.rotate(-1 + f * .5); ell(c, -.5, 0, .65, .2, '#fdf1d6'); ell(c, -.85, 0, .32, .12, '#f2c85a'); c.restore();
+  c.save(); c.translate(0, -.05); c.rotate(.95 + Math.sin(t * 4 - .4) * .45); ell(c, -.5, 0, .65, .2, '#eadcbc'); ell(c, -.85, 0, .32, .12, '#d9ad45'); c.restore();
   ell(c, -.1, .15, .62, .32, '#fffaf0');
+  c.save(); c.translate(-.12, .02); c.rotate(.7 + f * .45); ell(c, -.5, 0, .65, .2, '#fdf1d6'); ell(c, -.85, 0, .32, .12, '#f2c85a'); c.restore();
   c.strokeStyle = '#e8a317'; c.lineWidth = .05; c.beginPath(); c.moveTo(-.2, .45); c.lineTo(-.25, .7); c.moveTo(.05, .45); c.lineTo(.05, .7); c.stroke();
   ell(c, .45, -.15, .2, .28, '#f0c060'); ell(c, .45, -.05, .22, .08, '#d6452f');
   limb(c, .5, -.25, .3, .05, -.9 + f * .2, '#f0c060');
@@ -519,6 +523,7 @@ function dCurupira(c, t) {
   c.strokeStyle = '#b8744a'; c.lineWidth = .12; c.lineCap = 'round';
   for (const [x, s] of [[-.1, 1], [.15, -1]]) { c.beginPath(); c.moveTo(x, .35); c.lineTo(x, .72 + s * st); c.stroke(); ell(c, x - .1, .76 + s * st, .14, .06, '#b8744a'); }
   c.fillStyle = '#3f9a3a'; for (let i = 0; i < 5; i++) { const x = -.25 + i * .12; c.beginPath(); c.moveTo(x, .15); c.lineTo(x + .06, .45); c.lineTo(x + .12, .15); c.fill(); }
+  limb(c, -.12, -.12, .28, .06, 2.3 + Math.sin(t * 3 + 1) * .3, '#b8744a');
   ell(c, 0, -.05, .28, .3, '#c98456');
   limb(c, .1, -.1, .3, .06, .6 + Math.sin(t * 3) * .3, '#c98456');
   for (let i = 0; i < 6; i++) {
@@ -548,6 +553,7 @@ function dBoitata(c, t) {
 function dMapinguari(c, t) {
   const st = Math.sin(t * 2) * .05, B = '#7a3b22', D = '#5a2a16';
   c.fillStyle = D; for (const [x, s] of [[-.35, 1], [.35, -1]]) c.fillRect(x - .12, .4, .24, .4 + s * st);
+  limb(c, -.42, -.02, .38, .12, 2.2 - Math.sin(t * 1.5) * .2, D);
   ell(c, 0, 0, .7, .62, B);
   c.strokeStyle = D; c.lineWidth = .04; for (let i = 0; i < 16; i++) { const a = i / 16 * TAU; c.beginPath(); c.moveTo(Math.cos(a) * .55, Math.sin(a) * .5); c.lineTo(Math.cos(a) * .75, Math.sin(a) * .68); c.stroke(); }
   limb(c, .4, 0, .4, .12, .9 + Math.sin(t * 1.5) * .2, B);
@@ -556,10 +562,12 @@ function dMapinguari(c, t) {
 }
 function dQuetzal(c, t) {
   const f = Math.sin(t * 3);
+  c.save(); c.translate(.3, -.14); c.rotate(.8 + Math.sin(t * 3 - .4) * .6);
+  ell(c, -.55, 0, .7, .2, '#1f8a60'); ell(c, -.95, 0, .35, .12, '#d9c45a'); c.restore();
   const pts = serpentBody(c, t, { n: 24, seg: .2, r: .32, amp: .3, c1: '#1f9a6a', c2: '#29b57a', belly: '#f5e27a' });
   for (let k = 4; k < 22; k += 3) ell(c, pts[k][0], pts[k][1] - .1, .1, .04, '#7df0c0');
   const y0 = pts[0][1];
-  c.save(); c.translate(.2, y0 - .1); c.rotate(-1.3 + f * .6);
+  c.save(); c.translate(.2, y0 - .1); c.rotate(.55 + f * .6);
   ell(c, -.55, 0, .7, .2, '#2fc48a'); ell(c, -.95, 0, .35, .12, '#f5e27a'); c.restore();
   const cols = ['#ff5d7a', '#ffb02e', '#fff27a', '#7dffb2', '#5ad1ff', '#b28dff'];
   for (let i = 0; i < 6; i++) { const a = Math.PI * (.55 + i * .17); ell(c, .8 + Math.cos(a) * .38, y0 + Math.sin(a) * .38, .2, .07, cols[i], a); }
@@ -568,15 +576,18 @@ function dQuetzal(c, t) {
 }
 function dGaruda(c, t) {
   const f = Math.sin(t * 3);
-  for (const s of [1, -1]) {
-    c.save(); c.translate(-.1, -.1); c.rotate(-1.2 + f * .6 - (s > 0 ? .25 : 0));
-    const g = c.createLinearGradient(0, 0, -1.6, 0); g.addColorStop(0, '#d62a1f'); g.addColorStop(.6, '#ff9a1f'); g.addColorStop(1, '#ffe07a');
+  const gwing = (dx, dy, a, far) => {
+    c.save(); c.translate(dx, dy); c.rotate(a);
+    const g = c.createLinearGradient(0, 0, -1.6, 0);
+    g.addColorStop(0, far ? '#a81f16' : '#d62a1f'); g.addColorStop(.6, far ? '#d97a14' : '#ff9a1f'); g.addColorStop(1, far ? '#e0c060' : '#ffe07a');
     c.fillStyle = g; c.beginPath(); c.moveTo(0, -.12); c.quadraticCurveTo(-.9, -.35, -1.7, -.05);
     for (let i = 0; i < 6; i++) c.lineTo(-1.6 + i * .26, .12 + (i % 2) * .08);
     c.lineTo(0, .12); c.fill(); c.restore();
-  }
+  };
+  gwing(.05, -.2, .75 + Math.sin(t * 3 - .4) * .6, true);
   c.fillStyle = '#ff9a1f'; c.beginPath(); c.moveTo(-.45, .2); c.lineTo(-1.1, .55); c.lineTo(-.9, .6); c.lineTo(-1, .75); c.lineTo(-.4, .4); c.fill();
   ell(c, 0, .1, .55, .4, '#d62a1f'); ell(c, .1, .15, .35, .25, '#ffcf5a');
+  gwing(-.1, -.05, .5 + f * .6, false);
   ell(c, .55, -.35, .26, .24, '#2f9a4a');
   c.fillStyle = '#e8a317'; c.beginPath(); c.moveTo(.4, -.52); c.lineTo(.7, -.52); c.lineTo(.55, -.95); c.fill(); c.fillRect(.38, -.56, .34, .07);
   c.fillStyle = '#ffcf2e'; c.beginPath(); c.moveTo(.75, -.4); c.quadraticCurveTo(1, -.35, .92, -.18); c.lineTo(.74, -.28); c.fill();
