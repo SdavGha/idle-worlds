@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Art style comparison</title>
+<link rel="stylesheet" href="../shared/engine.css">
+<style>
+  :root{--bg:#021018}
+  html,body{overflow:auto;height:auto}
+  body{padding:20px;color:#eaf6ff;font-family:var(--body)}
+  h1{font-family:var(--display);font-weight:600;margin:0 0 4px}
+  p{margin:0 0 18px;color:#bcd9ec}
+  table{border-collapse:separate;border-spacing:10px}
+  th{font-family:var(--display);font-weight:600;text-align:left;padding:0 4px;font-size:18px}
+  td.name{font-family:var(--display);font-size:16px;width:120px;vertical-align:middle}
+  canvas{border-radius:12px;display:block}
+</style>
+</head>
+<body>
+<h1>Old drawing vs new cartoon style</h1>
+<p>Left: the drawings in the game now. Right: the new cel-shaded style (curved outlines, flat colours, light from the top left). Three poses each.</p>
+<table id="t"><tr><th></th><th>Old</th><th>New (cel)</th></tr></table>
+<script src="../shared/helpers.js"></script>
+<script src="../deep-sea/theme.js"></script>
+<script>
+const rows = [
+  ['Clownfish', dClown, dClownCel, BY.clown.box, '#1f7fb8'],
+  ['Whale Shark', dWhaleShark, dWhaleSharkCel, BY.whaleshark.box, '#1f7fb8'],
+  ['Treasure Chest (closed)', (c, t) => ddChest(c, t, { open: 0 }), (c, t) => ddChestCel(c, t, { open: 0 }), [-.8, -1.25, .95, .2], '#172a3c'],
+  ['Treasure Chest (open)', (c, t) => ddChest(c, t, { open: 1 }), (c, t) => ddChestCel(c, t, { open: 1 }), [-.8, -1.25, .95, .2], '#172a3c'],
+];
+function fit(el, draw, box, t, bg) {
+  const c = el.getContext('2d'); c.fillStyle = bg; c.fillRect(0, 0, el.width, el.height);
+  const bw = box[2] - box[0], bh = box[3] - box[1], s = Math.min(el.width * .82 / bw, el.height * .8 / bh);
+  c.save(); c.translate(el.width / 2 - (box[0] + bw / 2) * s, el.height / 2 - (box[1] + bh / 2) * s); c.scale(s, s); draw(c, t); c.restore();
+}
+const tbl = document.getElementById('t'); tbl.remove();
+for (const [name, oldD, newD, box, bg] of rows) {
+  const h = document.createElement('h2'); h.textContent = name; h.style.cssText = 'font-family:var(--display);font-weight:600;margin:22px 0 6px';
+  document.body.append(h);
+  for (const [label, d] of [['Old', oldD], ['New (cel)', newD]]) {
+    const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap';
+    const lab = document.createElement('div'); lab.textContent = label; lab.style.cssText = 'width:90px;font-family:var(--display);font-size:16px';
+    row.append(lab);
+    for (const t of [.1, .45, .8]) { const el = document.createElement('canvas'); el.width = 240; el.height = 150; fit(el, d, box, t, bg); row.append(el); }
+    document.body.append(row);
+  }
+}
+</script>
+</body>
+</html>

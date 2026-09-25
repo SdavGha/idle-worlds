@@ -495,6 +495,179 @@ const DECOR = [
 ];
 
 
+/* ================= cel-shaded art (trial) =================
+   A second way to draw some animals and decorations: real outlines made of curves, flat colours only,
+   three tones per colour (mid, a dark shape on the shadow side, a small light shape where the light hits),
+   light always from the top left, thin darker lines for detail. No gradients and no see-through colours.
+   Turned on with ?art=cel in the address; the old drawings stay the default until Job decides. */
+const ART_CEL = typeof location !== 'undefined' && new URLSearchParams(location.search).get('art') === 'cel';
+// Paint a shape twice: all of it in the normal palette, then only its shadow side (below the curve) in the dark palette.
+function celShade(c, shadowPath, paint, pal) {
+  paint(c, pal.mid);
+  c.save(); shadowPath(c); c.clip(); paint(c, pal.dark); c.restore();
+}
+function strokePath(c, path, col, w) { c.strokeStyle = col; c.lineWidth = w; c.lineJoin = 'round'; c.lineCap = 'round'; path(c); c.stroke(); }
+
+/* ---- clownfish ---- */
+const CLOWN = {
+  mid: { body: '#ff7a1a', band: '#ffffff', edge: '#1b1b1b', fin: '#ff8f33' },
+  dark: { body: '#d9560a', band: '#d6dce6', edge: '#111111', fin: '#d9640f' },
+  light: '#ffb070', line: '#b84a08',
+};
+function clownBody(c) {
+  c.beginPath(); c.moveTo(1, .02);
+  c.bezierCurveTo(.95, -.38, .45, -.58, -.1, -.55);
+  c.bezierCurveTo(-.55, -.52, -.82, -.3, -.9, -.08);
+  c.lineTo(-.9, .1);
+  c.bezierCurveTo(-.8, .32, -.45, .52, 0, .52);
+  c.bezierCurveTo(.5, .52, .95, .38, 1, .02);
+  c.closePath();
+}
+function clownBand(c, x, w, bend) {
+  c.beginPath(); c.moveTo(x - w / 2, -.7);
+  c.quadraticCurveTo(x - w / 2 + bend, 0, x - w / 2, .7);
+  c.lineTo(x + w / 2, .7);
+  c.quadraticCurveTo(x + w / 2 + bend, 0, x + w / 2, -.7);
+  c.closePath();
+}
+function clownShadowSide(c) { c.beginPath(); c.moveTo(-1.5, .12); c.bezierCurveTo(-.4, .3, .5, .28, 1.2, .1); c.lineTo(1.2, 1); c.lineTo(-1.5, 1); c.closePath(); }
+function dClownCel(c, t) {
+  const w = Math.sin(t * 10) * .12, flap = Math.sin(t * 9) * .35;
+  // tail: two rounded lobes with a black rim
+  const tailPath = c2 => { c2.beginPath(); c2.moveTo(-.82, 0); c2.bezierCurveTo(-1.05, -.2, -1.2, -.52 + w, -1.4, -.5 + w); c2.bezierCurveTo(-1.33, -.2 + w * .5, -1.3, -.05 + w * .5, -1.2, 0 + w * .5);
+    c2.bezierCurveTo(-1.3, .05 + w * .5, -1.33, .2 + w * .5, -1.4, .5 + w); c2.bezierCurveTo(-1.2, .52 + w, -1.05, .2, -.82, 0); c2.closePath(); };
+  celShade(c, clownShadowSide, (c2, p) => { c2.fillStyle = p.fin; tailPath(c2); c2.fill(); }, CLOWN);
+  strokePath(c, tailPath, '#1b1b1b', .05);
+  strokePath(c, c2 => { c2.beginPath(); c2.moveTo(-.95, 0); c2.lineTo(-1.3, -.35 + w); c2.moveTo(-.95, .02); c2.lineTo(-1.3, .35 + w); }, CLOWN.line, .025);
+  // dorsal fin: soft leaf shape
+  const dorsal = c2 => { c2.beginPath(); c2.moveTo(-.55, -.5); c2.bezierCurveTo(-.4, -.95, .05, -.95, .35, -.5); c2.closePath(); };
+  c.fillStyle = CLOWN.mid.fin; dorsal(c); c.fill();
+  strokePath(c, dorsal, '#1b1b1b', .05);
+  strokePath(c, c2 => { c2.beginPath(); for (const x of [-.35, -.15, .05]) { c2.moveTo(x, -.55); c2.lineTo(x + .05, -.82); } }, CLOWN.line, .022);
+  // body with bands, shadow side redrawn darker
+  const paintBody = (c2, p) => {
+    c2.save(); clownBody(c2); c2.clip();
+    c2.fillStyle = p.body; c2.fillRect(-1, -1, 2.2, 2);
+    for (const [x, bw] of [[.38, .26], [-.3, .28]]) { c2.fillStyle = p.edge; clownBand(c2, x, bw + .07, .06); c2.fill(); c2.fillStyle = p.band; clownBand(c2, x, bw, .06); c2.fill(); }
+    c2.restore();
+  };
+  celShade(c, clownShadowSide, paintBody, CLOWN);
+  // light: a small shape along the top of the head
+  c.save(); clownBody(c); c.clip();
+  c.fillStyle = CLOWN.light; c.beginPath(); c.moveTo(.55, -.42); c.bezierCurveTo(.72, -.4, .86, -.3, .9, -.18); c.bezierCurveTo(.8, -.26, .7, -.32, .55, -.36); c.closePath(); c.fill();
+  c.fillStyle = '#ffffff'; c.beginPath(); c.moveTo(-.4, -.49); c.bezierCurveTo(-.3, -.53, -.22, -.53, -.16, -.5); c.lineTo(-.2, -.46); c.bezierCurveTo(-.28, -.48, -.35, -.47, -.4, -.45); c.closePath(); c.fill();
+  c.restore();
+  strokePath(c, clownBody, CLOWN.line, .045);
+  // pectoral fin, flapping, with rays
+  c.save(); c.translate(.12, .12); c.rotate(.5 + flap);
+  const pec = c2 => { c2.beginPath(); c2.moveTo(0, 0); c2.bezierCurveTo(.1, -.12, .38, -.1, .42, 0); c2.bezierCurveTo(.38, .1, .1, .12, 0, 0); c2.closePath(); };
+  c.fillStyle = CLOWN.dark.fin; pec(c); c.fill();
+  strokePath(c, pec, '#1b1b1b', .035);
+  c.restore();
+  // eye and smile
+  ell(c, .66, -.14, .13, .13, '#1b1b1b'); ell(c, .7, -.18, .04, .04, '#ffffff');
+  strokePath(c, c2 => { c2.beginPath(); c2.moveTo(.86, .1); c2.quadraticCurveTo(.92, .16, .98, .1); }, '#7a2e06', .035);
+}
+
+/* ---- whale shark ---- */
+const WSH = {
+  mid: { back: '#4f7396', belly: '#dfe8f0', fin: '#446688' },
+  dark: { back: '#3a5a7a', belly: '#b8c6d4', fin: '#34506e' },
+  light: '#7898b8', line: '#2c4560', spot: '#f2f6fa',
+};
+function wsBody(c) {
+  c.beginPath(); c.moveTo(1.08, .02);
+  c.bezierCurveTo(1.06, -.32, .7, -.55, .1, -.56);
+  c.bezierCurveTo(-.5, -.56, -.9, -.3, -1.05, -.05);
+  c.lineTo(-1.05, .05);
+  c.bezierCurveTo(-.85, .28, -.4, .48, .15, .46);
+  c.bezierCurveTo(.7, .44, 1.04, .3, 1.08, .02);
+  c.closePath();
+}
+function wsBellyLine(c) { c.beginPath(); c.moveTo(-1.2, .1); c.bezierCurveTo(-.4, .08, .5, .18, 1.2, .08); c.lineTo(1.2, 1); c.lineTo(-1.2, 1); c.closePath(); }
+function wsShadowSide(c) { c.beginPath(); c.moveTo(-1.2, .28); c.bezierCurveTo(-.3, .38, .6, .38, 1.2, .22); c.lineTo(1.2, 1); c.lineTo(-1.2, 1); c.closePath(); }
+function dWhaleSharkCel(c, t) {
+  const w = Math.sin(t * 4) * .1, flap = Math.sin(t * 2) * .2;
+  // tail: tall crescent, upper lobe longer
+  const tail = c2 => { c2.beginPath(); c2.moveTo(-.98, 0); c2.bezierCurveTo(-1.15, -.2, -1.35, -.6 + w, -1.55, -.88 + w); c2.bezierCurveTo(-1.48, -.45 + w, -1.4, -.15, -1.36, .02);
+    c2.bezierCurveTo(-1.4, .18, -1.45, .38 + w, -1.45, .52 + w); c2.bezierCurveTo(-1.28, .35 + w, -1.12, .18, -.98, 0); c2.closePath(); };
+  celShade(c, c2 => { c2.beginPath(); c2.moveTo(-2, .02); c2.lineTo(-.9, .02); c2.lineTo(-.9, 1); c2.lineTo(-2, 1); c2.closePath(); }, (c2, p) => { c2.fillStyle = p.fin; tail(c2); c2.fill(); }, WSH);
+  strokePath(c, tail, WSH.line, .03);
+  // dorsal fin
+  const dorsal = c2 => { c2.beginPath(); c2.moveTo(-.1, -.5); c2.bezierCurveTo(-.2, -.7, -.38, -.86, -.48, -.84); c2.bezierCurveTo(-.5, -.7, -.55, -.58, -.66, -.44); c2.closePath(); };
+  celShade(c, c2 => { c2.beginPath(); c2.moveTo(-.3, -1); c2.lineTo(0, -1); c2.lineTo(0, 0); c2.lineTo(-.3, 0); c2.closePath(); }, (c2, p) => { c2.fillStyle = p.fin; dorsal(c2); c2.fill(); }, WSH);
+  strokePath(c, dorsal, WSH.line, .03);
+  // body: blue back, pale belly, each with its own shadow tone
+  const paint = (c2, p) => {
+    c2.save(); wsBody(c2); c2.clip();
+    c2.fillStyle = p.back; c2.fillRect(-1.2, -1, 2.4, 2);
+    c2.fillStyle = p.belly; wsBellyLine(c2); c2.fill();
+    c2.restore();
+  };
+  celShade(c, wsShadowSide, paint, WSH);
+  c.save(); wsBody(c); c.clip();
+  // light along the top of the back
+  c.fillStyle = WSH.light; c.beginPath(); c.moveTo(.8, -.36); c.bezierCurveTo(.5, -.52, 0, -.54, -.45, -.46); c.bezierCurveTo(0, -.47, .45, -.45, .8, -.3); c.closePath(); c.fill();
+  // ridges and the famous white spots
+  strokePath(c, c2 => { c2.beginPath(); c2.moveTo(-.9, -.12); c2.bezierCurveTo(-.3, -.3, .3, -.3, .9, -.12); c2.moveTo(-.9, .0); c2.bezierCurveTo(-.3, -.12, .3, -.12, .95, 0); }, WSH.line, .018);
+  for (let i = 0; i < 11; i++) for (let j = 0; j < 3; j++) {
+    const x = -.85 + i * .17 + (j % 2) * .08, y = -.4 + j * .14;
+    if (y > .08) continue;
+    ell(c, x, y, .03, .03, WSH.spot);
+  }
+  c.restore();
+  strokePath(c, wsBody, WSH.line, .035);
+  // gill slits, mouth, eye
+  strokePath(c, c2 => { c2.beginPath(); for (const x of [.62, .55, .48]) { c2.moveTo(x, -.18); c2.quadraticCurveTo(x - .04, -.04, x, .1); } }, WSH.line, .02);
+  strokePath(c, c2 => { c2.beginPath(); c2.moveTo(1.06, .12); c2.quadraticCurveTo(.9, .2, .72, .16); }, '#1c2e44', .035);
+  ell(c, .8, -.12, .06, .06, '#1c2e44'); ell(c, .82, -.14, .02, .02, '#ffffff');
+  // pectoral fin
+  c.save(); c.translate(.2, .25); c.rotate(.65 + flap);
+  const pec = c2 => { c2.beginPath(); c2.moveTo(0, 0); c2.bezierCurveTo(.08, -.14, .45, -.12, .6, 0); c2.bezierCurveTo(.4, .08, .12, .1, 0, 0); c2.closePath(); };
+  c.fillStyle = WSH.dark.fin; pec(c); c.fill(); strokePath(c, pec, WSH.line, .03);
+  c.restore();
+}
+
+/* ---- treasure chest (sits on the sand, casts a flat shadow) ---- */
+const CHEST = {
+  mid: { wood: '#8a5a2b', gold: '#e0a83a' }, dark: { wood: '#6b4220', gold: '#b8832a' },
+  light: { wood: '#a8743c', gold: '#f7d27a' }, line: '#4e2f14', sandShadow: '#0e1b29',
+};
+function ddChestCel(c, t, o) {
+  const open = o ? o.open : 0;
+  c.fillStyle = CHEST.sandShadow; c.beginPath(); c.moveTo(-.72, .02); c.bezierCurveTo(-.6, .12, .5, .14, .78, .04); c.bezierCurveTo(.5, -.04, -.5, -.05, -.72, .02); c.fill();
+  // box: front face in mid wood, right end in dark wood, planks and gold bands
+  const front = c2 => { c2.beginPath(); c2.moveTo(-.52, -.45); c2.lineTo(.42, -.45); c2.lineTo(.44, 0); c2.lineTo(-.5, 0); c2.closePath(); };
+  const side = c2 => { c2.beginPath(); c2.moveTo(.42, -.45); c2.lineTo(.54, -.47); c2.lineTo(.56, -.04); c2.lineTo(.44, 0); c2.closePath(); };
+  c.fillStyle = CHEST.mid.wood; front(c); c.fill();
+  c.fillStyle = CHEST.dark.wood; side(c); c.fill();
+  c.fillStyle = CHEST.light.wood; c.beginPath(); c.moveTo(-.5, -.43); c.lineTo(.4, -.43); c.lineTo(.4, -.39); c.lineTo(-.5, -.39); c.closePath(); c.fill();
+  strokePath(c, c2 => { c2.beginPath(); c2.moveTo(-.5, -.22); c2.lineTo(.43, -.22); }, CHEST.line, .02);
+  for (const x of [-.36, .26]) { c.fillStyle = CHEST.mid.gold; c.fillRect(x, -.45, .08, .45); c.fillStyle = CHEST.dark.gold; c.fillRect(x + .05, -.45, .03, .45); }
+  strokePath(c, front, CHEST.line, .03); strokePath(c, side, CHEST.line, .03);
+  // pearls piled inside when it opens (solid, no glow)
+  if (open > 0) {
+    for (let i = 0; i < 6; i++) { const x = -.36 + i * .14, y = -.48 - (i % 2) * .06; ell(c, x, y, .075, .075, '#e8eef6'); ell(c, x - .025, y - .025, .025, .025, '#ffffff'); }
+    for (let i = 0; i < 5; i++) { const a = -Math.PI * (.2 + i * .15), r = .55 + open * .15; strokePath(c, c2 => { c2.beginPath(); c2.moveTo(Math.cos(a) * .4, -.5 + Math.sin(a) * .4); c2.lineTo(Math.cos(a) * r, -.5 + Math.sin(a) * r); }, '#ffe9a8', .035); }
+  }
+  // lid: curved top, hinged at the back
+  c.save(); c.translate(-.52, -.45); c.rotate(-open * 1.1);
+  const lid = c2 => { c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(.94, 0); c2.bezierCurveTo(.96, -.2, .8, -.34, .47, -.34); c2.bezierCurveTo(.14, -.34, -.02, -.2, 0, 0); c2.closePath(); };
+  c.fillStyle = CHEST.mid.wood; lid(c); c.fill();
+  c.save(); lid(c); c.clip(); c.fillStyle = CHEST.dark.wood; c.fillRect(.6, -.4, .5, .5); c.fillStyle = CHEST.light.wood; c.beginPath(); c.moveTo(.2, -.26); c.bezierCurveTo(.3, -.32, .5, -.33, .62, -.3); c.lineTo(.6, -.26); c.bezierCurveTo(.48, -.29, .32, -.28, .22, -.22); c.closePath(); c.fill(); c.restore();
+  c.save(); lid(c); c.clip(); for (const x of [.16, .74]) { c.fillStyle = CHEST.mid.gold; c.fillRect(x, -.4, .08, .4); c.fillStyle = CHEST.dark.gold; c.fillRect(x + .05, -.4, .03, .4); } c.restore();
+  strokePath(c, lid, CHEST.line, .03);
+  c.restore();
+  // lock
+  c.fillStyle = CHEST.mid.gold; c.fillRect(-.09, -.42, .16, .16); c.fillStyle = CHEST.dark.gold; c.fillRect(-.09, -.3, .16, .04);
+  ell(c, -.01, -.35, .025, .025, CHEST.line);
+}
+if (ART_CEL) {
+  BY.clown.draw = dClownCel;
+  BY.whaleshark.draw = dWhaleSharkCel;
+  DECOR.find(d => d.id === 'chest').draw = ddChestCel;
+}
+
 /* ================= scenery ================= */
 // Same seed in both windows, so the ground and plants line up across the screen edge.
 function buildScene() {
