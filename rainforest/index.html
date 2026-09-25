@@ -318,9 +318,11 @@ function dMacaw(c, t) {
   c.fillStyle = '#f4efe6'; c.beginPath(); c.moveTo(.72, -.32); c.quadraticCurveTo(1.05, -.3, .98, .02); c.quadraticCurveTo(.9, -.08, .76, -.05); c.fill();
   c.fillStyle = '#2a2a2a'; c.beginPath(); c.moveTo(.76, -.05); c.quadraticCurveTo(.88, .02, .8, .08); c.lineTo(.72, -.02); c.fill();
 }
-function dSloth(c, t) {
+function dSloth(c, t, o) {
+  if (!(o && o.perched)) {
   c.strokeStyle = '#6b4a2a'; c.lineWidth = .14; c.lineCap = 'round'; c.beginPath(); c.moveTo(-1.1, -.75); c.lineTo(1.1, -.72); c.stroke();
   ell(c, .8, -.82, .12, .06, '#4f9a3e', -.5); ell(c, -.7, -.84, .1, .05, '#4f9a3e', .4);
+  }
   const sw = Math.sin(t * 1.2) * .05;
   c.strokeStyle = '#8a7258'; c.lineWidth = .16;
   for (const [x0, x1] of [[-.45, -.6], [-.2, -.25], [.25, .3], [.5, .6]]) { c.beginPath(); c.moveTo(x0, -.1); c.lineTo(x1 + sw, -.72); c.stroke(); }
@@ -345,8 +347,8 @@ function dMonkey(c, t) {
   ell(c, .19, -.38, .035, .035, '#111'); ell(c, .31, -.38, .035, .035, '#111');
   smile(c, .25, -.3, .06, '#5a3a20');
 }
-function dBoa(c, t) {
-  c.strokeStyle = '#6b4a2a'; c.lineWidth = .14; c.lineCap = 'round'; c.beginPath(); c.moveTo(-1.1, .2); c.lineTo(1.1, .18); c.stroke();
+function dBoa(c, t, o) {
+  if (!(o && o.perched)) { c.strokeStyle = '#6b4a2a'; c.lineWidth = .14; c.lineCap = 'round'; c.beginPath(); c.moveTo(-1.1, .2); c.lineTo(1.1, .18); c.stroke(); }
   for (let i = 0; i < 4; i++) {
     const x = -.55 + i * .32;
     ell(c, x, .12, .2, .34, i % 2 ? '#1fa04a' : '#23b453');
@@ -434,9 +436,9 @@ function dHarpy(c, t) {
   c.strokeStyle = '#111'; c.lineWidth = .03;
   for (const x of [0, .22]) { c.beginPath(); c.moveTo(x, .6); c.quadraticCurveTo(x + .1, .62, x + .12, .7); c.moveTo(x, .6); c.quadraticCurveTo(x - .1, .62, x - .1, .7); c.stroke(); }
 }
-function dOrangutan(c, t) {
+function dOrangutan(c, t, o) {
   const sw = Math.sin(t * 2) * .2, O = '#c9571f', D = '#8a3712';
-  c.strokeStyle = '#3f7a2f'; c.lineWidth = .05; c.beginPath(); c.moveTo(.45 + sw * .3, -1.45); c.lineTo(.45 + sw * .3, -1.05); c.stroke();
+  if (!(o && o.perched)) { c.strokeStyle = '#3f7a2f'; c.lineWidth = .05; c.beginPath(); c.moveTo(.45 + sw * .3, -1.45); c.lineTo(.45 + sw * .3, -1.05); c.stroke(); }
   c.strokeStyle = O; c.lineWidth = .2; c.lineCap = 'round';
   c.beginPath(); c.moveTo(.2, -.3); c.quadraticCurveTo(.5, -.8, .45 + sw * .3, -1.2); c.stroke();
   c.beginPath(); c.moveTo(-.25, -.25); c.quadraticCurveTo(-.7, .1, -.6, .55); c.stroke();
@@ -568,21 +570,21 @@ const SP = [
     fact: 'Its wings aren\'t really blue! Tiny scales on them bounce the light around, so they shine bright blue.' },
   { id: 'dartfrog', name: 'Poison Dart Frog', zone: [.86, .88], walk: 1, hop: 1, cost: 60, inc: 1.2, size: 1.8, speed: 3, eats: 0, max: 10, draw: dDartFrog, box: [-1, -.62, .95, .62],
     fact: 'Its bright colors are a warning to other animals: don\'t eat me, I\'m poisonous!' },
-  { id: 'treefrog', name: 'Red-eyed Tree Frog', zone: [.55, .72], cost: 250, inc: 4, size: 2.2, speed: 2, eats: 0, max: 10, draw: dTreeFrog, box: [-1, -.62, .95, .66],
+  { id: 'treefrog', name: 'Red-eyed Tree Frog', zone: [.5, .72], perch: { anchor: -.55, move: 'jump', step: 'hop', reach: 30, walk: .45, rest: [2, 7], anim: .4 }, cost: 250, inc: 4, size: 2.2, speed: 2, eats: 0, max: 10, draw: dTreeFrog, box: [-1, -.62, .95, .66],
     fact: 'It sleeps all day with its eyes shut. If something scares it, it pops open its big red eyes, which may surprise the hunter.' },
-  { id: 'toucan', name: 'Toucan', zone: [.22, .45], cost: 900, inc: 12, size: 3, speed: 6, eats: 1, max: 8, draw: dToucan, box: [-1.4, -.6, 1.72, .7],
+  { id: 'toucan', name: 'Toucan', zone: [.2, .46], perch: { anchor: -.66, move: 'fly', reach: 70, walk: .15, rest: [3, 10], anim: .12, fly: 1 }, cost: 900, inc: 12, size: 3, speed: 6, eats: 1, max: 8, draw: dToucan, box: [-1.4, -.6, 1.72, .7],
     fact: 'Its huge beak is surprisingly light because it is mostly hollow inside. It also helps the toucan stay cool.' },
-  { id: 'chameleon', name: 'Chameleon', zone: [.55, .72], cost: 2000, inc: 22, size: 2.8, speed: 1.2, eats: 0, max: 8, draw: dChameleon, box: [-1.3, -.7, 1, .7],
+  { id: 'chameleon', name: 'Chameleon', zone: [.5, .72], perch: { anchor: -.5, move: 'climb', walk: .75, rest: [3, 9], anim: .5 }, cost: 2000, inc: 22, size: 2.8, speed: 1.2, eats: 0, max: 8, draw: dChameleon, box: [-1.3, -.7, 1, .7],
     fact: 'Each eye can look a different way at the same time, and it can change color. Try tapping it!' },
   { id: 'centipede', name: 'Giant Centipede', zone: [.86, .88], walk: 1, cost: 2500, inc: 28, size: 3.8, speed: 2.5, eats: 0, max: 8, draw: dCentipede, box: [-1.35, -.32, 1.42, .3],
     fact: 'The Amazonian giant centipede can grow as long as a school ruler. Some hang from cave ceilings to catch bats!' },
-  { id: 'macaw', name: 'Scarlet Macaw', zone: [.06, .35], cost: 3000, inc: 35, size: 3.4, speed: 8, eats: 1, max: 8, draw: dMacaw, box: [-1.75, -.55, 1.05, .6],
+  { id: 'macaw', name: 'Scarlet Macaw', zone: [.2, .4], perch: { anchor: -.48, move: 'fly', reach: 90, walk: .1, rest: [2, 8], anim: .12, fly: 1 }, cost: 3000, inc: 35, size: 3.4, speed: 8, eats: 1, max: 8, draw: dMacaw, box: [-1.75, -.55, 1.05, .6],
     fact: 'Flocks of macaws gather on riverbanks to lick clay. Scientists think the clay gives them salt they need.' },
-  { id: 'sloth', name: 'Three-toed Sloth', zone: [.25, .42], cost: 6000, inc: 60, size: 3.6, speed: .6, eats: 0, max: 6, draw: dSloth, box: [-1.15, -.9, 1.15, .5],
+  { id: 'sloth', name: 'Three-toed Sloth', zone: [.2, .46], perch: { anchor: .72, move: 'climb', walk: .8, rest: [10, 30], anim: .5 }, cost: 6000, inc: 60, size: 3.6, speed: .6, eats: 0, max: 6, draw: dSloth, box: [-1.15, -.9, 1.15, .5],
     fact: 'It moves so slowly that tiny green algae grow in its fur, helping it hide. It climbs down only about once a week, to poop!' },
-  { id: 'monkey', name: 'Spider Monkey', zone: [.25, .5], cost: 10000, inc: 100, size: 3.4, speed: 6, eats: 1, max: 8, draw: dMonkey, box: [-1.1, -1.05, .55, .75],
+  { id: 'monkey', name: 'Spider Monkey', zone: [.2, .46], perch: { anchor: 1, move: 'swing', step: 'swing', reach: 38, walk: .25, rest: [1.5, 5], anim: .6 }, cost: 10000, inc: 100, size: 3.4, speed: 6, eats: 1, max: 8, draw: dMonkey, box: [-1.1, -1.05, .55, .75],
     fact: 'Its long tail works like a fifth hand for holding on to branches.' },
-  { id: 'boa', name: 'Emerald Tree Boa', zone: [.5, .68], cost: 30000, inc: 260, size: 3.4, speed: 1, eats: 0, max: 6, draw: dBoa, box: [-1.15, -.45, 1.15, .5],
+  { id: 'boa', name: 'Emerald Tree Boa', zone: [.5, .72], perch: { anchor: -.2, move: 'climb', walk: .6, rest: [6, 15], anim: .6 }, cost: 30000, inc: 260, size: 3.4, speed: 1, eats: 0, max: 6, draw: dBoa, box: [-1.15, -.45, 1.15, .5],
     fact: 'It drapes itself over a branch in neat loops and rests its head on top, waiting quietly for dinner.' },
   { id: 'tapir', name: 'Tapir', zone: [.86, .88], walk: 1, cost: 60000, inc: 420, size: 4.2, speed: 2.5, eats: 1, max: 4, draw: dTapir, box: [-.9, -.5, 1.25, .65],
     fact: 'Its short trunk is its nose and upper lip joined together. Baby tapirs are covered in stripes and spots like a watermelon.' },
@@ -592,7 +594,7 @@ const SP = [
     fact: 'The smallest tiger in the world, found only in the rainforests of Sumatra in Indonesia. Its stripes are closer together than other tigers\', and very few are left in the wild.' },
   { id: 'harpy', name: 'Harpy Eagle', zone: [.04, .18], cost: 250000, inc: 1600, size: 4.2, speed: 7, eats: 0, max: 4, draw: dHarpy, box: [-1.4, -1.1, 1, .72],
     fact: 'One of the most powerful eagles in the world. Its claws can be as long as a bear\'s.' },
-  { id: 'orangutan', name: 'Orangutan', zone: [.25, .48], cost: 500000, inc: 3000, size: 4, speed: 2, eats: 1, max: 4, draw: dOrangutan, box: [-.85, -1.45, .8, .8],
+  { id: 'orangutan', name: 'Orangutan', zone: [.2, .46], perch: { anchor: 1.22, move: 'swing', step: 'swing', reach: 30, walk: .3, rest: [4, 12], anim: .4 }, cost: 500000, inc: 3000, size: 4, speed: 2, eats: 1, max: 4, draw: dOrangutan, box: [-.85, -1.45, .8, .8],
     fact: 'Almost every night it builds a brand new leafy nest high in the trees to sleep in.' },
   { id: 'megatherium', name: 'Giant Ground Sloth', zone: [.8, .85], cost: 1500000, inc: 7000, size: 18, max: 1, draw: dMegatherium, box: [-1.55, -.7, 1.5, .82],
     pass: { ground: 1, secs: 60, msg: 'A giant ground sloth is lumbering by!' }, origin: 'A real animal, now extinct',
@@ -736,7 +738,7 @@ const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 const sil = document.createElement('canvas');
 let W = 0, H = 0, u = 1, WW = 0, DPR = 1, VW = 0, VH = 0, vs = 1;
 let camX = 0, camPhase = 0, autoPause = 0, slot = 0, span = 1;
-let seabed = [], rocks = [], plants = [], rays = [], vents = [];
+let seabed = [], rocks = [], plants = [], rays = [], vents = [], trees = [], branches = [];
 let creatures = [], pellets = [], bubbles = [], snow = [], texts = [], sparks = [];
 let pass = null, passTimer = 60, lastPass = '', nextId = 1;
 const chest = { t: rand(40, 80), open: 0, phase: 0, hold: 0 };
@@ -766,6 +768,19 @@ function buildScene() {
   rays = [];
   for (let i = 0; i < 6 * WORLD_SCREENS; i++) rays.push({ x: sr(0, WW), w: sr(3, 9) * u, ph: sr(0, 9) });
   vents = [];
+  trees = []; branches = [];
+  const nt = 4 * WORLD_SCREENS;
+  for (let i = 0; i < nt; i++) {
+    const x = WW * (i + .5) / nt + sr(-.3, .3) * WW / nt, tw = u * sr(1.8, 2.6);
+    trees.push({ x, tw });
+    let side = sr(0, 1) < .5 ? -1 : 1;
+    for (let k = 0; k < 6; k++) {
+      const y0 = H * (.24 + k * .09 + sr(-.02, .02)), len = u * sr(11, 22), ang = sr(.08, .22);
+      const x0 = x + side * tw * .4, x1 = x0 + side * len, y1 = y0 - len * ang;
+      branches.push({ x0, y0, x1, y1, tree: i, side, len: Math.hypot(x1 - x0, y1 - y0) });
+      side = -side;
+    }
+  }
   snow = [];
   for (let i = 0; i < 120 * WORLD_SCREENS; i++) snow.push({ x: rand(0, WW), y: rand(0, H * .9), r: rand(.5, 1.4), v: rand(1, 4) });
   bubbles = [];
@@ -808,7 +823,7 @@ function newTarget(o) { o.tx = rand(WW * .03, WW * .97); o.ty = H * rand(o.sp.zo
 function spawn(sp, init) {
   const nearCam = camX + rand(0, span * W);
   const o = { id: nextId++, sp, x: init ? rand(WW * .05, WW * .95) : nearCam, y: init ? H * rand(sp.zone[0], sp.zone[1]) : -u * 10,
-    vx: 0, vy: 0, t: rand(0, 100), face: 1, fs: 1, puff: 0, puffT: 0, z: sp.max === 1 ? 0 : rand(0, 1) };
+    vx: 0, vy: 0, t: rand(0, 100), face: 1, fs: 1, puff: 0, puffT: 0, z: sp.max === 1 ? 0 : sp.perch ? rand(0, .15) : rand(0, 1) };
   o.k = sp.max === 1 ? 1 : rand(.85, 1.15) * (1 - .3 * o.z);
   if (!init) o.y = H * sp.zone[0] - u * 12;
   newTarget(o); if (!init) o.ty = H * rand(sp.zone[0], sp.zone[1]);
@@ -826,8 +841,97 @@ function eat(p, o) {
   const bonus = Math.max(1, income() * 2);
   addPearls(bonus); floatText(o.x, o.y - o.sp.size * u, '+' + fmt(bonus));
 }
+/* ---- perching: climbers, sitters and birds live on the tree branches ----
+   Each perching animal sits at a spot on a branch (branch b, position f from trunk 0 to tip 1). It rests,
+   then walks along the branch or moves to another one in its own way: frogs jump in an arc, monkeys and
+   orangutans swing underneath, birds fly, and slow climbers crawl back to the trunk and climb it. */
+function branchPt(b, f) { return [b.x0 + (b.x1 - b.x0) * f, b.y0 + (b.y1 - b.y0) * f]; }
+function perchPos(o, b, f) {
+  const [x, y] = branchPt(b, f), a = o.sp.perch.anchor;
+  return [x, y + a * o.sp.size * u * o.k + (a < 0 ? -u * .45 : u * .45)];
+}
+function perchBranches(sp) {
+  const list = branches.filter(b => { const m = (b.y0 + b.y1) / 2 / H; return m > sp.zone[0] && m < sp.zone[1]; });
+  return list.length ? list : branches;
+}
+function queueMove(o, b, f, kind) {
+  const [x1, y1] = perchPos(o, b, f), d = Math.hypot(x1 - o.x, y1 - o.y), sp = o.sp, v = Math.max(sp.speed, .4) * u;
+  const dur = kind === 'walk' ? d / v : kind === 'climb' ? d / (v * .7) : kind === 'hop' ? .45 + d / (u * 40)
+    : kind === 'jump' ? .6 + d / (u * 55) : kind === 'swing' ? .8 + d / (u * 45) : d / (v * 1.2);
+  o.plan.push({ b, f, kind, dur: Math.max(.25, dur) });
+}
+function decidePerch(o) {
+  const P = o.sp.perch, b = o.b;
+  o.plan = [];
+  if (Math.random() < P.walk) { queueMove(o, b, clamp(o.f + rand(-.5, .5), .12, 1), P.step || 'walk'); return; }
+  if (P.move === 'climb') {
+    const same = perchBranches(o.sp).filter(x => x.tree === b.tree && x !== b);
+    if (!same.length) { queueMove(o, b, rand(.15, 1), 'walk'); return; }
+    const nb = same[Math.floor(Math.random() * same.length)];
+    queueMove(o, b, .03, 'walk');
+    o.plan.push({ b: nb, f: .03, kind: 'climb', dur: Math.abs((nb.y0 - b.y0)) / (Math.max(o.sp.speed, .4) * u * .7) + .3 });
+    o.plan.push({ b: nb, f: rand(.3, 1), kind: 'walk', dur: 0 });
+    return;
+  }
+  const reach = P.reach * u, near = perchBranches(o.sp).filter(x => x !== b && Math.hypot((x.x0 + x.x1) / 2 - o.x, (x.y0 + x.y1) / 2 - o.y) < reach);
+  if (!near.length) { queueMove(o, b, clamp(o.f + rand(-.5, .5), .12, 1), P.step || 'walk'); return; }
+  queueMove(o, near[Math.floor(Math.random() * near.length)], rand(.25, 1), P.move);
+}
+function updPerch(o, dt) {
+  const sp = o.sp, P = sp.perch, s = sp.size * u * o.k;
+  o.perched = true;
+  if (!o.b || !branches.includes(o.b)) {
+    const list = perchBranches(sp); o.b = list[Math.floor(Math.random() * list.length)]; o.f = rand(.2, 1);
+    [o.x, o.y] = perchPos(o, o.b, o.f); o.plan = []; o.mv = null; o.wait = rand(.5, P.rest[1]);
+  }
+  // Birds fly down to grab falling berries; everyone else catches the ones that fall within reach.
+  if (P.fly && !o.mv && pellets.length) {
+    let best = u * 45, pick = null;
+    for (const p of pellets) { const d = Math.hypot(p.x - o.x, p.y - o.y); if (d < best) { best = d; pick = p; } }
+    if (pick) { o.plan = []; o.mv = { pel: pick, kind: 'fly', x0: o.x, y0: o.y, p: 0, dur: .4 + best / (sp.speed * u * 1.4) }; o.face = pick.x >= o.x ? 1 : -1; }
+  }
+  if (!P.fly) for (const p of pellets) if (Math.hypot(p.x - o.x, p.y - o.y) < s * .9) { eat(p, o); break; }
+  if (!o.mv && o.plan && o.plan.length && o.wait <= 0) {
+    const m = o.plan.shift();
+    const [x1] = perchPos(o, m.b, m.f);
+    if (m.dur === 0) { const d = Math.hypot(x1 - o.x, perchPos(o, m.b, m.f)[1] - o.y); m.dur = Math.max(.25, d / (Math.max(sp.speed, .4) * u)); }
+    o.mv = Object.assign(m, { x0: o.x, y0: o.y, p: 0 });
+    if (m.kind !== 'climb' && Math.abs(x1 - o.x) > u * .2) o.face = x1 >= o.x ? 1 : -1;
+  }
+  if (o.mv) {
+    const m = o.mv; m.p += dt / m.dur;
+    const p = Math.min(1, m.p);
+    let x1, y1;
+    if (m.pel) {
+      if (!pellets.includes(m.pel)) { o.mv = null; o.plan = []; queueMove(o, perchBranches(sp).reduce((a, b) => Math.hypot(b.x1 - o.x, b.y1 - o.y) < Math.hypot(a.x1 - o.x, a.y1 - o.y) ? b : a), rand(.4, 1), 'fly'); return; }
+      x1 = m.pel.x; y1 = m.pel.y;
+    } else [x1, y1] = perchPos(o, m.b, m.f);
+    const smooth = m.kind === 'walk' || m.kind === 'climb' ? p : p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    let x = m.x0 + (x1 - m.x0) * smooth, y = m.y0 + (y1 - m.y0) * smooth;
+    const d = Math.hypot(x1 - m.x0, y1 - m.y0);
+    if (m.kind === 'jump') y -= Math.min(d * .5, u * 12) * 4 * p * (1 - p);
+    if (m.kind === 'hop') y -= Math.min(d * .6 + u * 1.5, u * 4) * 4 * p * (1 - p);
+    if (m.kind === 'swing') y += Math.min(d * .35 + u * 2, u * 9) * Math.sin(p * Math.PI);
+    if (m.kind === 'fly' && !m.pel) y -= Math.min(d * .25, u * 8) * Math.sin(p * Math.PI);
+    o.vx = (x - o.x) / Math.max(dt, 1e-3); o.vy = (y - o.y) / Math.max(dt, 1e-3);
+    o.x = x; o.y = y;
+    o.t += dt * (m.kind === 'fly' || m.kind === 'swing' ? 1 : Math.max(P.anim, .6));
+    if (m.pel && Math.hypot(x1 - x, y1 - y) < s * .6) { eat(m.pel, o); o.mv = null; o.plan = []; queueMove(o, perchBranches(sp).reduce((a, b) => Math.hypot(b.x1 - o.x, b.y1 - o.y) < Math.hypot(a.x1 - o.x, a.y1 - o.y) ? b : a), rand(.4, 1), 'fly'); }
+    else if (p >= 1) { if (m.b) { o.b = m.b; o.f = m.f; } o.mv = null; o.wait = o.plan.length ? 0 : rand(P.rest[0], P.rest[1]); }
+  } else {
+    [o.x, o.y] = perchPos(o, o.b, o.f); o.vx = 0; o.vy = 0;
+    o.t += dt * P.anim;
+    o.wait -= dt;
+    if (o.wait <= 0 && !(o.plan && o.plan.length)) decidePerch(o);
+  }
+  o.fs += (o.face - o.fs) * Math.min(1, dt * 6);
+  if (o.puffT > 0) { o.puffT -= dt; o.puff = Math.min(1, o.puff + dt * 4); } else o.puff = Math.max(0, o.puff - dt * .8);
+}
+
 function updCreature(o, dt) {
-  const sp = o.sp; o.t += dt;
+  const sp = o.sp;
+  if (sp.perch && !o.leaving) { updPerch(o, dt); return; }
+  o.t += dt;
   if (o.leaving) {
     o.vx += (o.face * Math.max(sp.speed, 4) * u * 2.5 - o.vx) * Math.min(1, dt * 2); o.vy *= .95;
     o.x += o.vx * dt; o.y += o.vy * dt;
@@ -861,7 +965,7 @@ function drawCreature(o, x0, x1) {
   const sp = o.sp, s = sp.size * u * o.k, reach = s * 5;
   if (o.x < x0 - reach || o.x > x1 + reach) return;
   ctx.save(); ctx.translate(o.x, o.y); ctx.globalAlpha = 1 - .4 * (o.z || 0);
-  if (!sp.noflip) ctx.rotate(Math.atan2(o.vy, Math.abs(o.vx) + u) * .5 * o.face);
+  if (!sp.noflip && !(sp.perch && o.perched)) ctx.rotate(Math.atan2(o.vy, Math.abs(o.vx) + u) * .5 * o.face);
   ctx.scale(s * (sp.noflip ? 1 : o.fs), s);
   sp.draw(ctx, o.t, o); ctx.restore();
 }
@@ -1033,6 +1137,27 @@ function drawPlants(t) {
     }
   }
 }
+// The climbing trees in front: trunks from the floor up into the canopy, branches with leaves.
+function drawTrees(t, x0, x1) {
+  for (const tr of trees) {
+    if (tr.x < x0 - W * .3 || tr.x > x1 + W * .3) continue;
+    const g = ctx.createLinearGradient(tr.x - tr.tw / 2, 0, tr.x + tr.tw / 2, 0);
+    g.addColorStop(0, '#3e2a18'); g.addColorStop(.5, '#6a4a2c'); g.addColorStop(1, '#3a2716');
+    ctx.fillStyle = g; ctx.fillRect(tr.x - tr.tw / 2, 0, tr.tw, H * SEABED + u * 2);
+    for (let k = 0; k < 5; k++) ell(ctx, tr.x + (k % 2 ? .2 : -.25) * tr.tw, H * (.15 + k * .16), tr.tw * .32, u * 1.2, 'rgba(90,150,70,.5)');
+  }
+  ctx.lineCap = 'round';
+  for (const b of branches) {
+    if (Math.max(b.x0, b.x1) < x0 - 30 || Math.min(b.x0, b.x1) > x1 + 30) continue;
+    ctx.strokeStyle = '#5a3e26'; ctx.lineWidth = u * 1.1; ctx.beginPath(); ctx.moveTo(b.x0, b.y0); ctx.lineTo(b.x1, b.y1); ctx.stroke();
+    ctx.strokeStyle = '#72512f'; ctx.lineWidth = u * .35; ctx.beginPath(); ctx.moveTo(b.x0, b.y0 - u * .25); ctx.lineTo(b.x1, b.y1 - u * .25); ctx.stroke();
+    for (let k = 0; k < 5; k++) {
+      const f = .5 + k * .12, x = b.x0 + (b.x1 - b.x0) * f, y = b.y0 + (b.y1 - b.y0) * f, sw = Math.sin(t * .8 + k + b.x0) * .1;
+      ell(ctx, x, y - u * .9, u * 1.6, u * .6, k % 2 ? '#3f8a34' : '#4f9a3e', -.5 * b.side + sw);
+      ell(ctx, x + b.side * u * .4, y + u * .7, u * 1.4, u * .5, '#357a2c', .5 * b.side + sw);
+    }
+  }
+}
 function drawLabels() {
   ctx.font = `${Math.max(12, u * 1.5)}px "Fredoka","Segoe UI",sans-serif`; ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(255,255,255,.4)';
   const x = VW / vs - u * 2;
@@ -1194,6 +1319,7 @@ function render(t, viewX, showLabels) {
   for (const s of snow) { if (s.x < x0 || s.x > x1) continue; ctx.globalAlpha = .35; ell(ctx, s.x, s.y, s.r, s.r, '#fff6c0'); }
   ctx.globalAlpha = 1;
   drawPass(viewX - sx);
+  drawTrees(t, x0, x1);
   drawSeabed();
   drawPlants(t);
   drawDecor(t);
@@ -1250,7 +1376,7 @@ function sendSnapshot() {
   if (companion.closed) { endDual(); return; }
   post({
     type: 'snap', W, H, T, camX, span, slot: companionSlot, decor: state.decor, chestOpen: chest.open,
-    cr: creatures.map(o => [SP.indexOf(o.sp), o.x, o.y, o.t, o.fs, o.face, o.puff, o.k, o.vx, o.vy, o.id, o.leaving ? 1 : 0, o.z, o.hue]),
+    cr: creatures.map(o => [SP.indexOf(o.sp), o.x, o.y, o.t, o.fs, o.face, o.puff, o.k, o.vx, o.vy, o.id, o.leaving ? 1 : 0, o.z, o.hue, o.perched ? 1 : 0]),
     pel: pellets.map(p => [p.x, p.y]),
     pass: pass ? { i: SP.indexOf(pass.sp), x: pass.x, y: pass.y, s: pass.s, dir: pass.dir, t: pass.t, tease: pass.tease, x0: pass.x0, x1: pass.x1 } : null,
     texts, sparks,
@@ -1810,7 +1936,7 @@ let snap = null, viewLast = performance.now();
 function applySnap(m) {
   if (m.W !== W || m.H !== H) { setWorld(m.W, m.H); vs = VH / H; }
   T = m.T; camX = m.camX; span = m.span; slot = m.slot; state.decor = m.decor; chest.open = m.chestOpen;
-  creatures = m.cr.map(a => ({ sp: SP[a[0]], x: a[1], y: a[2], t: a[3], fs: a[4], face: a[5], puff: a[6], k: a[7], vx: a[8], vy: a[9], id: a[10], leaving: !!a[11], z: a[12], hue: a[13] }));
+  creatures = m.cr.map(a => ({ sp: SP[a[0]], x: a[1], y: a[2], t: a[3], fs: a[4], face: a[5], puff: a[6], k: a[7], vx: a[8], vy: a[9], id: a[10], leaving: !!a[11], z: a[12], hue: a[13], perched: !!a[14] }));
   pellets = m.pel.map(p => ({ x: p[0], y: p[1] }));
   pass = m.pass ? Object.assign({}, m.pass, { sp: SP[m.pass.i] }) : null;
   texts = m.texts; sparks = m.sparks;
