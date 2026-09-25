@@ -3,8 +3,8 @@
 // internet, so updates show up on the next open, and fall back to the saved copy when offline.
 // Icons, fonts and the manifest come from the saved copy first.
 const CACHE = 'rainforest-v8';
-const FILES = ['./', 'index.html', 'theme.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
-  '../shared/helpers.js', '../shared/engine.js', '../shared/engine.css', '../shared/fonts/fredoka.woff2', '../shared/fonts/nunito.woff2'];
+const FILES = ['./', 'index.html', 'theme.js', 'cel.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
+  '../shared/helpers.js', '../shared/cel.js', '../shared/engine.js', '../shared/engine.css', '../shared/fonts/fredoka.woff2', '../shared/fonts/nunito.woff2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Art review</title>
+<link rel="stylesheet" href="../shared/engine.css">
+<style>
+  :root{--bg:#021018}
+  html,body{overflow:auto;height:auto}
+  body{padding:16px;color:#eaf6ff;font-family:var(--body)}
+  h1{font-family:var(--display);font-weight:600;margin:0 0 12px}
+  .row{display:flex;gap:6px;align-items:center;margin:4px 0;flex-wrap:wrap}
+  .lab{width:110px;font-family:var(--display);font-size:14px}
+  canvas{border-radius:10px;display:block}
+</style>
+</head>
+<body>
+<h1 id="h"></h1>
+<script>
+// Review page: ?world=deep-sea or rainforest, &what=animals|decor, &only=new to skip the old column.
+const Q = new URLSearchParams(location.search), WORLD = Q.get('world') || 'deep-sea', WHAT = Q.get('what') || 'animals';
+document.getElementById('h').textContent = WORLD + ' · ' + WHAT + ' (old | new)';
+for (const src of ['../shared/helpers.js', '../shared/cel.js', `../${WORLD}/theme.js`, `../${WORLD}/cel.js`]) document.write(`<script src="${src}"><\/script>`);
+</script>
+<script>
+window.addEventListener('load', () => {
+  const bg = WORLD === 'deep-sea' ? '#1f6fa8' : '#3f8f55';
+  const fit = (el, draw, box, t) => {
+    const c = el.getContext('2d'); c.fillStyle = bg; c.fillRect(0, 0, el.width, el.height);
+    const bw = box[2] - box[0], bh = box[3] - box[1], s = Math.min(el.width * .86 / bw, el.height * .82 / bh);
+    c.save(); c.translate(el.width / 2 - (box[0] + bw / 2) * s, el.height / 2 - (box[1] + bh / 2) * s); c.scale(s, s); draw(c, t); c.restore();
+  };
+  const items = WHAT === 'decor'
+    ? DECOR.map(d => [d.name, (c, t) => d.draw(c, t, { open: 0 }), (c, t) => (CEL_DECOR[d.id] || d.draw)(c, t, { open: 0 }), d.box])
+      .concat(DECOR.filter(d => d.id === 'chest').map(d => [d.name + ' open', (c, t) => d.draw(c, t, { open: 1 }), (c, t) => (CEL_DECOR[d.id] || d.draw)(c, t, { open: 1 }), d.box]))
+    : SP.map(sp => [sp.name, (c, t) => sp.draw(c, t, { puff: 0, open: 0 }), (c, t) => (CEL_ART[sp.id] || sp.draw)(c, t, { puff: 0, open: 0 }), sp.box]);
+  const ids = Q.get('ids'), CW = +(Q.get('w') || 155), CH = Math.round(CW * .62);
+  for (const [name, oldD, newD, box] of items.filter((it, i) => !ids || ids.split(',').includes(String(i)))) {
+    const row = document.createElement('div'); row.className = 'row';
+    const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = name; row.append(lab);
+    for (const [d, times] of [[oldD, [.3]], [newD, [.1, .45, .8]]]) for (const t of times) { const el = document.createElement('canvas'); el.width = CW; el.height = CH; fit(el, d, box, t); row.append(el); }
+    document.body.append(row);
+  }
+});
+</script>
+</body>
+</html>

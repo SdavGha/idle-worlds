@@ -1,5 +1,7 @@
 "use strict";
 // The world page loads helpers.js, then its own theme.js (animals, scenery, words), then this engine.
+// Cel-shaded art mode (shared/cel.js): flat colours only, so no fading, dark overlays or soft glows.
+const CEL_ON = typeof ART_CEL !== 'undefined' && ART_CEL;
 document.body.insertAdjacentHTML('afterbegin', `<canvas id="c"></canvas>
 
 <div class="ui hud">
@@ -378,11 +380,55 @@ function updCreature(o, dt) {
 function drawCreature(o, x0, x1) {
   const sp = o.sp, s = sp.size * u * o.k, reach = s * 5;
   if (o.x < x0 - reach || o.x > x1 + reach) return;
-  ctx.save(); ctx.translate(o.x, o.y); ctx.globalAlpha = 1 - .4 * (o.z || 0);
+  if (CEL_ON && CEL_SPRITES) celPrepare(x0, x1);
+  ctx.save(); ctx.translate(o.x, o.y); ctx.globalAlpha = CEL_ON ? 1 : 1 - .4 * (o.z || 0);
   if (sp.perch && o.perched) { if (o.mvKind === 'walk' || o.mvKind === 'climb') ctx.rotate(Math.atan2(o.vy, Math.abs(o.vx) + 1e-6) * o.face); }
   else if (!sp.noflip) ctx.rotate(Math.atan2(o.vy, Math.abs(o.vx) + u) * .5 * o.face);
   ctx.scale(s * (sp.noflip ? 1 : o.fs), s);
-  sp.draw(ctx, o.t, o); ctx.restore();
+  const sl = CEL_ON && CEL_SPRITES && o.slot;
+  if (sl && sl.gen === atlas.gen) ctx.drawImage(atlas.cv, sl.x, sl.y, sl.w, sl.h, sl.ux, sl.uy, sl.uw, sl.uh);
+  else sp.draw(ctx, o.t, o);
+  ctx.restore();
+}
+/* Cartoon drawings cost more (every shaded part is clipped), so each animal is painted into one shared
+   sprite sheet (the atlas) and stamped from there. A sprite is repainted CEL_FPS times a second or when the
+   animal changes (colour, pose, size); moving it around still happens every frame. All repaints of a frame
+   happen together before any animal is stamped, so the graphics card only has to catch up once. */
+let CEL_FPS = 20, CEL_SPRITES = true;
+const ATLAS = 2048, atlas = { cv: null, g: null, x: 0, y: 0, row: 0, gen: 0, frame: '' };
+function atlasSlot(w, h) {
+  const A = atlas;
+  if (w > ATLAS / 2 || h > ATLAS / 2) return null;
+  if (A.x + w > ATLAS) { A.x = 0; A.y += A.row; A.row = 0; }
+  if (A.y + h > ATLAS) { A.gen++; A.x = A.y = A.row = 0; A.g.setTransform(1, 0, 0, 1, 0, 0); A.g.clearRect(0, 0, ATLAS, ATLAS); }
+  const sl = { x: A.x, y: A.y, w, h, gen: A.gen }; A.x += w + 2; A.row = Math.max(A.row, h + 2); return sl;
+}
+function celPrepare(x0, x1) {
+  const A = atlas, f = T + '|' + x0;
+  if (A.frame === f) return;
+  A.frame = f;
+  if (!A.cv) { A.cv = document.createElement('canvas'); A.cv.width = A.cv.height = ATLAS; A.g = A.cv.getContext('2d'); }
+  const g = A.g;
+  for (let pass = 0; pass < 2; pass++) for (const o of creatures) {
+    const sp = o.sp, s = sp.size * u * o.k;
+    if (o.x < x0 - s * 5 || o.x > x1 + s * 5) continue;
+    const b = sp.box, pad = .2 * Math.max(b[2] - b[0], b[3] - b[1]), px = s * DPR * vs;
+    let sl = o.slot;
+    const key = `${o.hue}|${o.perched}|${o.mvKind}|${o.puff}|${o.open}`;
+    if (!sl || sl.gen !== A.gen || Math.abs(sl.px - px) > px * .02) {
+      const uw = b[2] - b[0] + pad * 2, uh = b[3] - b[1] + pad * 2;
+      sl = o.slot = atlasSlot(Math.ceil(uw * px), Math.ceil(uh * px));
+      if (!sl) continue;
+      Object.assign(sl, { px, ux: b[0] - pad, uy: b[1] - pad, uw, uh, at: -1 });
+    }
+    if (pass === 0 && sl.gen !== A.gen) continue;   // the sheet was reset during this pass; the second pass repaints
+    if (sl.at >= 0 && o.t - sl.at < 1 / CEL_FPS && o.t >= sl.at && sl.key === key) continue;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(sl.x, sl.y, sl.w, sl.h);
+    g.save(); g.beginPath(); g.rect(sl.x, sl.y, sl.w, sl.h); g.clip();
+    g.setTransform(px, 0, 0, px, sl.x - sl.ux * px, sl.y - sl.uy * px);
+    sp.draw(g, o.t, o); g.restore();
+    sl.at = o.t; sl.key = key;
+  }
 }
 function inBox(sp, lx, ly) { const b = sp.box; return lx > b[0] && lx < b[2] && ly > b[1] && ly < b[3]; }
 function hitCreature(o, x, y) {
@@ -441,6 +487,7 @@ function paintPass(c) {
 function drawPass(viewX) {
   if (!pass) return;
   const edge = passEdge();
+  if (CEL_ON && !pass.tease) { paintPass(ctx); return; }
   if (!pass.tease) {
     ctx.fillStyle = `rgba(0,0,12,${.18 * edge})`; ctx.fillRect(viewX - u * 5, -u * 5, VW / vs + u * 10, H + u * 10);
     ctx.globalAlpha = edge; paintPass(ctx); ctx.globalAlpha = 1;
@@ -449,8 +496,8 @@ function drawPass(viewX) {
     sc.setTransform(1, 0, 0, 1, 0, 0); sc.clearRect(0, 0, sil.width, sil.height);
     sc.setTransform(DPR * vs, 0, 0, DPR * vs, 0, 0); sc.translate(-viewX, 0); paintPass(sc);
     sc.setTransform(1, 0, 0, 1, 0, 0);
-    sc.globalCompositeOperation = 'source-in'; sc.fillStyle = '#020812'; sc.fillRect(0, 0, sil.width, sil.height); sc.globalCompositeOperation = 'source-over';
-    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = .6 * edge; ctx.drawImage(sil, 0, 0); ctx.restore();
+    sc.globalCompositeOperation = 'source-in'; sc.fillStyle = CEL_ON ? THEME.shadowColor || '#06182a' : '#020812'; sc.fillRect(0, 0, sil.width, sil.height); sc.globalCompositeOperation = 'source-over';
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = CEL_ON ? 1 : .6 * edge; ctx.drawImage(sil, 0, 0); ctx.restore();
   }
 }
 function hitPass(x, y) {
@@ -759,14 +806,21 @@ state.ach = state.ach || {};
 let sessionT = 0;
 const REAL = SP.filter(s => !s.legend && !s.pass), LEGENDS = SP.filter(s => s.legend);
 const own = id => state.owned[id] || 0;
-const achCols = [['#8ff5e8', '#0f7c86'], ['#d6bdff', '#5b2fc0'], ['#fff1a8', '#d98200']];
+const achCols = [['#8ff5e8', '#0f7c86'], ['#d6bdff', '#5b2fc0'], ['#fff1a8', '#d98200']], achMid = ['#2fb3aa', '#8a63e0', '#f2b632'];
 function achArt(tier, icon) {
   return (c, t) => {
     const [hi, lo] = achCols[tier];
     if (tier) { c.fillStyle = lo; c.beginPath(); for (let i = 0; i < 36; i++) { const a = i / 36 * TAU, r = i % 2 ? 1 : .9; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } c.fill(); }
-    const g = c.createRadialGradient(-.25, -.3, .05, 0, 0, .85); g.addColorStop(0, hi); g.addColorStop(1, lo);
-    c.fillStyle = g; c.beginPath(); c.arc(0, 0, .82, 0, TAU); c.fill();
-    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = .05; c.beginPath(); c.arc(0, 0, .7, 0, TAU); c.stroke();
+    if (CEL_ON) {
+      // flat badge: mid disc, darker lower half, a light spot at the top left, a solid inner ring
+      const t3 = tones(achMid[tier]);
+      part(c, ringPath(0, 0, .82), t3, below(.1, .25), lens(-.55, -.35, -.15, -.72, .1), .04);
+      strokePath(c, ringPath(0, 0, .7), t3.light, .05);
+    } else {
+      const g = c.createRadialGradient(-.25, -.3, .05, 0, 0, .85); g.addColorStop(0, hi); g.addColorStop(1, lo);
+      c.fillStyle = g; c.beginPath(); c.arc(0, 0, .82, 0, TAU); c.fill();
+      c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = .05; c.beginPath(); c.arc(0, 0, .7, 0, TAU); c.stroke();
+    }
     c.save(); icon(c, t, lo); c.restore();
   };
 }
