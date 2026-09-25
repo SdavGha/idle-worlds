@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>โลกเปิดทิ้งไว้</title>
+<meta name="theme-color" content="#062038">
+<link rel="icon" href="deep-sea/icons/icon-192.png">
+<style>
+  :root{--bg:#021018;--card:#0a2a45;--text:#eaf6ff;--muted:#9fc3dd}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:"Leelawadee UI","Segoe UI",Tahoma,sans-serif}
+  main{max-width:720px;margin:0 auto;padding:40px 16px}
+  h1{font-size:30px;margin:0 0 6px}
+  p{color:var(--muted);margin:0 0 24px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+  a.world{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;border-radius:20px;background:var(--card);
+    color:var(--text);text-decoration:none;border:1px solid rgba(160,220,255,.2);font-size:20px}
+  a.world:hover{border-color:rgba(160,220,255,.6)}
+  a.world img{width:96px;height:96px;border-radius:22px}
+  .soon{opacity:.45;pointer-events:none}
+  .soon span{width:96px;height:96px;border-radius:22px;background:rgba(160,220,255,.12);display:grid;place-items:center;font-size:36px}
+</style>
+</head>
+<body>
+<main>
+  <h1>โลกเปิดทิ้งไว้</h1>
+  <p>เลือกโลกที่อยากเปิดดู</p>
+  <div class="grid">
+    <a class="world" href="deep-sea/"><img src="deep-sea/icons/icon-192.png" alt="">ตู้ปลาทะเลลึก</a>
+    <a class="world soon"><span>?</span>เร็วๆ นี้</a>
+  </div>
+</main>
+</body>
+</html>
