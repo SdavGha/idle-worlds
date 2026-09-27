@@ -1034,7 +1034,11 @@ function goFullscreen() {
   const opts = wantFS === 'dual' && screenDetails ? { screen: screenDetails.currentScreen } : undefined;
   return document.documentElement.requestFullscreen(opts).then(lockEsc).catch(() => {});
 }
-function enterSingle() { wantFS = 'single'; goFullscreen(); keepAwake(); closeParent(); }
+function enterSingle() {
+  // iPhones have no fullscreen for web pages; the only way is to install the game on the home screen
+  if (!document.documentElement.requestFullscreen) { closeParent(); toast('For full screen on iPhone: open in Safari, tap Share, then "Add to Home Screen"'); return; }
+  wantFS = 'single'; goFullscreen(); keepAwake(); closeParent();
+}
 function exitAll() { wantFS = 'none'; if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); endDual(); closeParent(); }
 
 let holdT, parentT;
@@ -1053,6 +1057,7 @@ function setupGear() {
   });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => g.addEventListener(ev, () => { clearTimeout(holdT); g.classList.remove('holding'); }));
   g.addEventListener('contextmenu', e => e.preventDefault());
+  g.addEventListener('touchstart', e => e.preventDefault(), { passive: false });   // stops the phone's own long-press menu
 }
 addEventListener('pointerdown', keepAwake, { once: true });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') keepAwake(); else save(); });
