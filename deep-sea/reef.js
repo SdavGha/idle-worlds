@@ -1,13 +1,13 @@
 "use strict";
-/* ================= Deep sea: layered scenery (trial) =================
-   Turned on with ?scene=new. Instead of two flat ridges, the background is built from several layers of
-   rock pillars, flat-topped rock tables, boulders, sea fans and whip corals. Each layer
+/* ================= Deep sea: layered scenery =================
+   The default since Job picked it; ?scene=old shows the two flat ridges from before.
+   The background is built from several layers of rock pillars, flat-topped rock tables, boulders, sea fans and whip corals. Each layer
    sits further away and is mixed more with the colour of the water at its height (haze), so the view
    has real depth. Big dark boulders in front frame the picture.
    Everything stays in the cartoon style: flat colour pieces, lit from the top left, no gradients (the
    water itself is the only gradient). Rocks are cut into faceted pieces instead of being clipped, so
    they stay cheap to paint. Shapes are made once when the world is built and reused every frame. */
-const SCENE_NEW = ART_CEL && typeof location !== 'undefined' && new URLSearchParams(location.search).get('scene') === 'new';
+const SCENE_NEW = ART_CEL && !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('scene') === 'old');
 
 /* ---- colour helpers ---- */
 const cssRgb = (() => {
@@ -43,14 +43,16 @@ function rockPieces(r, cx, by, w, h, T, hz) {
   pts.push([cx + w * .45, by + h * .15], [cx - w * .45, by + h * .15]);
   const c = [cx - w * .1, by - h * .5], out = [], y = by - h / 2;
   const col = { mid: haze(T.mid, y, hz), dark: haze(T.dark, y, hz), light: haze(T.light, y, hz), line: haze(T.line, y, hz) };
+  // facets facing the same way go into one shape, so a rock costs four paint calls, not twenty
+  const lightP = new Path2D(), darkP = new Path2D();
   for (let i = 0; i < pts.length; i++) {
     const p = pts[i], q = pts[(i + 1) % pts.length], mx = (p[0] + q[0]) / 2 - c[0], my = (p[1] + q[1]) / 2 - c[1];
     const d = (mx * LIGHT[0] + my * LIGHT[1]) / (Math.hypot(mx, my) || 1);
-    const tri = new Path2D(); tri.moveTo(c[0], c[1]); tri.lineTo(p[0], p[1]); tri.lineTo(q[0], q[1]); tri.closePath();
-    out.push([tri, d > .45 ? col.light : d < -.15 ? col.dark : col.mid]);
+    const into = d > .45 ? lightP : d < -.15 ? darkP : null;
+    if (into) { into.moveTo(c[0], c[1]); into.lineTo(p[0], p[1]); into.lineTo(q[0], q[1]); into.closePath(); }
   }
   const outline = new Path2D(); pts.forEach((p, i) => i ? outline.lineTo(p[0], p[1]) : outline.moveTo(p[0], p[1])); outline.closePath();
-  out.push([outline, col.line, 'stroke']);
+  out.push([outline, col.mid], [lightP, col.light], [darkP, col.dark], [outline, col.line, 'stroke']);
   return out;
 }
 // A flat-topped rock table: a narrow stem holding up a wide slab whose top is crusted with pale-green sponge.
@@ -119,21 +121,25 @@ function buildReef() {
   const add = (L, x0, x1, pieces, sway) => L.items.push({ x0, x1, pieces, sway });
   reef = [layer(.3, .8), layer(.55, .55), layer(.8, .28)];
   const [far, mid, near] = reef;
+  // Sizes follow a landscape-shaped unit Z, so on a tall phone screen the tables stay wide and low
+  // instead of turning into thin mushrooms; counts shrink by the same amount so they don't pile up.
+  const Z = Math.max(W, H * 1.6), n = k => Math.max(1, Math.round(k * S * W / Z));
+  const tableTop = (frac, pw, base) => Math.max(H * frac, base - pw * 1.2);
   // far: wide hazy mounds and tall rock tables
-  for (let i = 0; i < 6 * S; i++) { const x = X(far), w = W * (.18 + r() * .22), h = H * (.12 + r() * .2); add(far, x - w, x + w, rockPieces(r, x, floorY + u * 3, w, h, REEF_ROCK, far.hz)); }
-  for (let i = 0; i < 3 * S; i++) { const x = X(far), pw = W * (.14 + r() * .14); add(far, x - pw, x + pw, tablePieces(r, x, floorY + u * 3, H * (.3 + r() * .22), pw, REEF_TABLE, REEF_TOP, far.hz)); }
+  for (let i = 0; i < n(6); i++) { const x = X(far), w = Z * (.18 + r() * .22), h = H * (.12 + r() * .2); add(far, x - w, x + w, rockPieces(r, x, floorY + u * 3, w, h, REEF_ROCK, far.hz)); }
+  for (let i = 0; i < n(3); i++) { const x = X(far), pw = Z * (.14 + r() * .14); add(far, x - pw, x + pw, tablePieces(r, x, floorY + u * 3, tableTop(.3 + r() * .22, pw, floorY), pw, REEF_TABLE, REEF_TOP, far.hz)); }
   // middle: tables, rocks and fans
-  for (let i = 0; i < 2 * S; i++) { const x = X(mid), pw = W * (.16 + r() * .14); add(mid, x - pw, x + pw, tablePieces(r, x, floorY + u * 2, H * (.45 + r() * .2), pw, REEF_TABLE, REEF_TOP, mid.hz)); }
-  for (let i = 0; i < 5 * S; i++) { const x = X(mid), w = W * (.1 + r() * .12), h = H * (.07 + r() * .1); add(mid, x - w, x + w, rockPieces(r, x, floorY + u * 2, w, h, REEF_ROCK, mid.hz)); }
+  for (let i = 0; i < n(2); i++) { const x = X(mid), pw = Z * (.16 + r() * .14); add(mid, x - pw, x + pw, tablePieces(r, x, floorY + u * 2, tableTop(.45 + r() * .2, pw, floorY), pw, REEF_TABLE, REEF_TOP, mid.hz)); }
+  for (let i = 0; i < n(5); i++) { const x = X(mid), w = Z * (.1 + r() * .12), h = H * (.07 + r() * .1); add(mid, x - w, x + w, rockPieces(r, x, floorY + u * 2, w, h, REEF_ROCK, mid.hz)); }
   for (let i = 0; i < 5 * S; i++) { const x = X(mid), h = H * (.08 + r() * .08), col = FAN_COLS[Math.floor(r() * 4)]; add(mid, x - h, x + h, null, { kind: 'fan', x, y: floorY - u, h, shape: fanShape(r, h), col: haze(col, floorY - h / 2, mid.hz), ph: r() * 9 }); }
   // near: a couple of big tables, rocks, more fans, whip corals
-  for (let i = 0; i < 2 * S; i++) { const x = X(near), pw = W * (.18 + r() * .12); add(near, x - pw, x + pw, tablePieces(r, x, floorY + u * 2, H * (.58 + r() * .14), pw, REEF_TABLE, REEF_TOP, near.hz)); }
-  for (let i = 0; i < 4 * S; i++) { const x = X(near), w = W * (.08 + r() * .1), h = H * (.05 + r() * .07); add(near, x - w, x + w, rockPieces(r, x, floorY + u * 2, w, h, REEF_ROCK, near.hz)); }
+  for (let i = 0; i < n(2); i++) { const x = X(near), pw = Z * (.18 + r() * .12); add(near, x - pw, x + pw, tablePieces(r, x, floorY + u * 2, tableTop(.58 + r() * .14, pw, floorY), pw, REEF_TABLE, REEF_TOP, near.hz)); }
+  for (let i = 0; i < n(4); i++) { const x = X(near), w = Z * (.08 + r() * .1), h = H * (.05 + r() * .07); add(near, x - w, x + w, rockPieces(r, x, floorY + u * 2, w, h, REEF_ROCK, near.hz)); }
   for (let i = 0; i < 6 * S; i++) { const x = X(near), h = H * (.07 + r() * .07), col = FAN_COLS[Math.floor(r() * 4)]; add(near, x - h, x + h, null, { kind: 'fan', x, y: floorY, h, shape: fanShape(r, h), col: haze(col, floorY - h / 2, near.hz), ph: r() * 9 }); }
   for (let i = 0; i < 5 * S; i++) { const x = X(near), h = H * (.08 + r() * .1); add(near, x - h * .4, x + h * .4, null, { kind: 'whip', x, y: floorY, h, col: haze('#f2a03a', floorY - h / 2, near.hz), ph: r() * 9 }); }
   // in front of everything: big dark boulders along the bottom that frame the view
-  const front = { f: 1.3, hz: 0, span: WW * 1.3 + W * 1.4, items: [] };
-  for (let i = 0; i < 3 * S; i++) { const x = -W * .2 + (i + .5) / (3 * S) * front.span + (r() - .5) * W * .3, w = W * (.3 + r() * .2), h = H * (.1 + r() * .08); add(front, x - w, x + w, rockPieces(r, x, H + u * 3, w, h, FRONT_ROCK, 0)); }
+  const front = { f: 1.3, hz: 0, span: WW * 1.3 + W * 1.4, items: [] }, nf = n(3);
+  for (let i = 0; i < nf; i++) { const x = -W * .2 + (i + .5) / nf * front.span + (r() - .5) * W * .3, w = Z * (.3 + r() * .2), h = H * (.1 + r() * .08); add(front, x - w, x + w, rockPieces(r, x, H + u * 3, w, h, FRONT_ROCK, 0)); }
   reef.front = front;
 }
 function drawReefLayer(L, viewX, t) {
@@ -145,7 +151,7 @@ function drawReefLayer(L, viewX, t) {
       for (const [p, col, how] of it.pieces) {
         if (how === 'stroke') { ctx.strokeStyle = col; ctx.lineWidth = u * .18; ctx.lineJoin = 'round'; ctx.stroke(p); }
         else if (how === 'thin') { ctx.strokeStyle = col; ctx.lineWidth = u * .1; ctx.stroke(p); }
-        else { ctx.fillStyle = col; ctx.fill(p); ctx.strokeStyle = col; ctx.lineWidth = .8; ctx.stroke(p); }   // the thin same-colour edge hides seams between facets
+        else { ctx.fillStyle = col; ctx.fill(p); }
       }
       continue;
     }
@@ -175,7 +181,7 @@ function drawSeabedReef() {
   strokePath(ctx, cc => { cc.beginPath(); cc.moveTo(seabed[0].x, seabed[0].y); edge(cc); }, REEF_FLOOR.light, u * .5);
   for (const rk of rocks) {
     if (rk.x < v0 - rk.rx * 2 || rk.x > v1 + rk.rx * 2) continue;
-    for (const [p, col, how] of rk.pieces) if (how === 'stroke') { ctx.strokeStyle = col; ctx.lineWidth = u * .15; ctx.stroke(p); } else { ctx.fillStyle = col; ctx.fill(p); ctx.strokeStyle = col; ctx.lineWidth = .8; ctx.stroke(p); }
+    for (const [p, col, how] of rk.pieces) if (how === 'stroke') { ctx.strokeStyle = col; ctx.lineWidth = u * .15; ctx.stroke(p); } else { ctx.fillStyle = col; ctx.fill(p); }
   }
 }
 function renderReef(t, viewX, showLabels) {
