@@ -117,6 +117,7 @@ function setWorld(w, h) {
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 1.5);
   VW = innerWidth; VH = innerHeight; cv.width = VW * DPR; cv.height = VH * DPR;
+  cv.style.width = VW + 'px'; cv.style.height = VH + 'px';   // exactly the visible area, so nothing hides behind a phone's browser bar
   sil.width = cv.width; sil.height = cv.height;
   if (!IS_VIEW) setWorld(VW, VH);
   vs = H ? VH / H : 1;
