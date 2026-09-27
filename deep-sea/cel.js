@@ -573,22 +573,14 @@ function ddCastleCel(c, t) {
 const CEL_DECOR = { coral: ddCoralCel, chest: ddChestCel, ship: ddShipCel, vent: ddVentCel, castle: ddCastleCel };
 
 /* ================= scenery ================= */
-// Water in flat bands from sunny blue to the deep dark, with gently wavy borders.
+// Water: a smooth fade from sunny blue to the deep dark (Job's call: flat bands looked like stacked sheets).
+// The colours are the same ones the bands used, so everything else keeps matching.
 const WATER = ['#3fa9da', '#2c8dc5', '#1d72a8', '#145889', '#0d406a', '#082b4c', '#051b33', '#020e1d'];
-const WATER_EDGES = [.08, .18, .3, .43, .56, .7, .83];
-function waterEdge(i, x) { return H * WATER_EDGES[i] + Math.sin(x * .004 + i * 1.7) * u * .9 + Math.sin(x * .011 + i) * u * .4; }
-function bandPath(i, x0, x1) {
-  return cc => {
-    cc.beginPath();
-    const top = i === 0 ? () => -u * 6 : x => waterEdge(i - 1, x), bot = i === WATER.length - 1 ? () => H + u * 6 : x => waterEdge(i, x);
-    cc.moveTo(x0, top(x0)); for (let x = x0; x <= x1 + 40; x += 40) cc.lineTo(x, top(x));
-    for (let x = x1 + 40; x >= x0; x -= 40) cc.lineTo(x, bot(x));
-    cc.closePath();
-  };
-}
+const WATER_AT = [0, .13, .24, .36, .5, .63, .77, 1];
 function drawWaterCel(viewX) {
-  const x0 = viewX - u * 6, x1 = viewX + VW / vs + u * 6;
-  for (let i = 0; i < WATER.length; i++) fillPath(ctx, bandPath(i, x0, x1), WATER[i]);
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  WATER.forEach((col, i) => g.addColorStop(WATER_AT[i], col));
+  ctx.fillStyle = g; ctx.fillRect(viewX - u * 6, -u * 6, VW / vs + u * 12, H + u * 12);
 }
 // Sunbeams: the one place the flat-colour rule is broken, on Job's call. They are see-through and fade out
 // smoothly towards their far end, so they melt into the water instead of stopping at a hard edge.

@@ -505,22 +505,14 @@ function ddTempleCel(c, t) {
 const CEL_DECOR = { orchids: ddOrchidsCel, chest: ddFruitTreeCel, waterfall: ddWaterfallCel, bridge: ddBridgeCel, temple: ddTempleCel };
 
 /* ================= scenery ================= */
-// The air in flat bands from pale sunny green at the top to dark green at the floor, with gently wavy borders.
+// The air: a smooth fade from pale sunny green at the top to dark green at the floor (Job's call: flat
+// bands looked like stacked sheets). Same colours the bands used, so everything else keeps matching.
 const SKY = ['#d4f0c4', '#b2e0a2', '#8fcb86', '#6fb471', '#529c5c', '#3f8550', '#2f6e43', '#225634', '#173f26', '#0c2416'];
-const SKY_EDGES = [.06, .13, .22, .32, .43, .54, .65, .76, .87];
-function skyEdge(i, x) { return H * SKY_EDGES[i] + Math.sin(x * .004 + i * 1.7) * u * .9 + Math.sin(x * .011 + i) * u * .4; }
-function skyBand(i, x0, x1) {
-  return cc => {
-    cc.beginPath();
-    const top = i === 0 ? () => -u * 6 : x => skyEdge(i - 1, x), bot = i === SKY.length - 1 ? () => H + u * 6 : x => skyEdge(i, x);
-    cc.moveTo(x0, top(x0)); for (let x = x0; x <= x1 + 40; x += 40) cc.lineTo(x, top(x));
-    for (let x = x1 + 40; x >= x0; x -= 40) cc.lineTo(x, bot(x));
-    cc.closePath();
-  };
-}
+const SKY_AT = [0, .09, .17, .27, .37, .48, .59, .7, .81, 1];
 function drawSkyCel(viewX) {
-  const x0 = viewX - u * 6, x1 = viewX + VW / vs + u * 6;
-  for (let i = 0; i < SKY.length; i++) fillPath(ctx, skyBand(i, x0, x1), SKY[i]);
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  SKY.forEach((col, i) => g.addColorStop(SKY_AT[i], col));
+  ctx.fillStyle = g; ctx.fillRect(viewX - u * 6, -u * 6, VW / vs + u * 12, H + u * 12);
 }
 // Sunbeams: the one place the flat-colour rule is broken, on Job's call. See-through, fading out smoothly
 // towards the forest floor; the whole beam dims while it rains.
